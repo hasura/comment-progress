@@ -17,7 +17,7 @@ inputs:
     description: 'If true, message will be appened to existing comment'
     required: false
     default: false
-  inputs:
+  variables:
     description: 'Input variables used for templating the message'
 runs:
   using: 'node12'
