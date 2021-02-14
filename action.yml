@@ -1,0 +1,24 @@
+name: 'Comment Progress'
+description: 'Notify progress with GitHub Issue/PR comment(s).'
+inputs:
+  repository:
+    description: 'Github repository'
+    required: true
+  number:
+    description: 'Github issue or pull request number'
+    required: true
+  id:
+    description: 'Unique identifier for the comment'
+    required: true
+  message:
+    description: 'Message to be commented'
+    required: true
+  append:
+    description: 'If true, message will be appened to existing comment'
+    required: false
+    default: false
+  inputs:
+    description: 'Input variables used for templating the message'
+runs:
+  using: 'node12'
+  main: 'index.js'
