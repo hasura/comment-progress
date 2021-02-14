@@ -1,0 +1,23 @@
+name: test
+
+on:
+  workflow_dispatch:
+    inputs:
+      number:
+        description: 'Issue/PR number'
+        required: true
+
+jobs:
+  single-comment:
+    runs-on: ubuntu-20.04
+    name: Single comment progress
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Hello world action step
+        uses: ./
+        with:
+          repository: 'hasura/comment-progress'
+          number: ${{ github.event.inputs.number }}
+          id: single-comment
+          message: 'Just a plain simple comment to progress report'
