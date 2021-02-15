@@ -14,8 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Hello world action step
-        uses: ./
+      - name: Single comment on an issue or PR
+        uses: hasura/comment-progress@main
         with:
           repository: 'hasura/comment-progress'
           number: ${{ github.event.inputs.number }}
