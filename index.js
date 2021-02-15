@@ -37,7 +37,7 @@ import { getCommentPrefix } from './identifier';
     comment = `${comment}\n${message}`;
 
     if (matchingComment) {
-      console.log(`Found a comment for ${identifier} and updating it.`);
+      console.log(`Updating an existing comment for ${identifier}.`);
       await octokit.issues.updateComment({
         owner: repoOwner,
         repo: repoName,
@@ -47,7 +47,7 @@ import { getCommentPrefix } from './identifier';
       return;
     }
 
-    console.log(`Creating a new comment for ${identifier}`);
+    console.log(`Creating a new comment for ${identifier}.`);
     await octokit.issues.createComment({
       owner: repoOwner,
       repo: repoName,

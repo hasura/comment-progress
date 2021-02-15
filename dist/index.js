@@ -85,7 +85,7 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
     comment = `${comment}\n${message}`;
 
     if (matchingComment) {
-      console.log(`Found a comment for ${identifier} and updating it.`);
+      console.log(`Updating an existing comment for ${identifier}.`);
       await octokit.issues.updateComment({
         owner: repoOwner,
         repo: repoName,
@@ -95,7 +95,7 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
       return;
     }
 
-    console.log(`Creating a new comment for ${identifier}`);
+    console.log(`Creating a new comment for ${identifier}.`);
     await octokit.issues.createComment({
       owner: repoOwner,
       repo: repoName,
