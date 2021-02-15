@@ -58,7 +58,7 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
     const variables = core.getInput('variables');
     const githubToken = core.getInput('github-token');
 
-    const octokit = github.getOctokit(token);
+    const octokit = github.getOctokit(githubToken);
 
     console.log(`repository = ${repository}`);
     console.log(`repoOwner = ${repoOwner}, repoName = ${repoName}`);
