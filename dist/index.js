@@ -2,26 +2,87 @@ module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 932:
-/***/ ((__unused_webpack_module, __unused_webpack_exports, __nccwpck_require__) => {
+/***/ 60:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
 
-const core = __nccwpck_require__(186);
-const github = __nccwpck_require__(438);
+"use strict";
+// ESM COMPAT FLAG
+__nccwpck_require__.r(__webpack_exports__);
+
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
+var core = __nccwpck_require__(186);
+var core_default = /*#__PURE__*/__nccwpck_require__.n(core);
+
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
+var github = __nccwpck_require__(438);
+var github_default = /*#__PURE__*/__nccwpck_require__.n(github);
+
+// CONCATENATED MODULE: ./comment.js
+
+
+async function findMatchingComment({ owner, repo, issue_number, identifier}) {
+  let fetchMoreComments = true;
+  let page = 0;
+  let mathingComment;
+  const commentPrefix = `<!-- ${identifier}: do not delete/edit this line -->`;
+  while (fetchMoreComments) {
+    page += 1;
+    const comments = await github_default().issues.listComments({
+      owner,
+      repo,
+      issue_number,
+      per_page: 100,
+      page,
+    });
+    fetchMoreComments = comments.data.length !== 0;
+    for (let comment of comments.data) {
+      if (comment.body.startsWith(commentPrefix)) {
+        mathingComment = comment;
+      }
+    }
+  }
+  return mathingComment;
+}
+
+// CONCATENATED MODULE: ./index.js
+
+
 
 try {
-  const repository = core.getInput('repository');
-  const number = core.getInput('number');
-  const id = core.getInput('id');
-  const message = core.getInput('message');
-  const append = core.getInput('append');
-  const variables = core.getInput('variables');
+  const repository = core_default().getInput('repository');
+  const [repoOwner, repoName] = repository.split('/');
+  if (!repoOwner || !repoName) {
+    throw new Error(`Invalid repository: ${repository}`);
+  }
+
+  const number = core_default().getInput('number');
+  const identifier = core_default().getInput('id');
+  const message = core_default().getInput('message');
+  const append = core_default().getInput('append');
+  const variables = core_default().getInput('variables');
 
   console.log(`repository = ${repository}`);
+  console.log(`repoOwner = ${repoOwner}, repoName = ${repoName}`);
+  console.log(`id = ${id}`);
   console.log(`variables = ${variables}`);
-
 } catch (error) {
-  core.setFailed(error.message);
+  core_default().setFailed(error.message);
 }
+
+(async () => {
+  try {
+    const matchingComment = await findMatchingComment({
+      owner: repoOwner,
+      repo: repoName,
+      issue_number: number,
+      identifier,
+    });
+
+    console.log(`matchingComment = ${matchingComment}`);
+  } catch (error) {
+    core_default().setFailed(error.message);
+  }
+})();
 
 
 /***/ }),
@@ -3295,7 +3356,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var deprecation = __nccwpck_require__(481);
+var deprecation = __nccwpck_require__(932);
 var once = _interopDefault(__nccwpck_require__(223));
 
 const logOnce = once(deprecation => console.warn(deprecation));
@@ -3681,7 +3742,7 @@ function removeHook(state, name, method) {
 
 /***/ }),
 
-/***/ 481:
+/***/ 932:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -5951,12 +6012,52 @@ module.exports = require("zlib");;
 /******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	(() => {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__nccwpck_require__.n = (module) => {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				() => module['default'] :
+/******/ 				() => module;
+/******/ 			__nccwpck_require__.d(getter, { a: getter });
+/******/ 			return getter;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__nccwpck_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__nccwpck_require__.o = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop)
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__nccwpck_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
 /******/ 	__nccwpck_require__.ab = __dirname + "/";/************************************************************************/
 /******/ 	// module exports must be returned from runtime so entry inlining is disabled
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
-/******/ 	return __nccwpck_require__(932);
+/******/ 	return __nccwpck_require__(60);
 /******/ })()
 ;
