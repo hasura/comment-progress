@@ -13,8 +13,6 @@ __nccwpck_require__.r(__webpack_exports__);
 var core = __nccwpck_require__(186);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __nccwpck_require__(438);
-var github_default = /*#__PURE__*/__nccwpck_require__.n(github);
-
 // CONCATENATED MODULE: ./comment.js
 
 
@@ -23,7 +21,7 @@ async function findMatchingComment({ token, owner, repo, issue_number, identifie
   let page = 0;
   let mathingComment;
   const commentPrefix = `<!-- ${identifier}: do not delete/edit this line -->`;
-  const octokit = github_default().getOctokit(token);
+  const octokit = github.getOctokit(token);
   while (fetchMoreComments) {
     page += 1;
     const comments = await octokit.issues.listComments({
@@ -6010,35 +6008,6 @@ module.exports = require("zlib");;
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/compat get default export */
-/******/ 	(() => {
-/******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__nccwpck_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
-/******/ 				() => module['default'] :
-/******/ 				() => module;
-/******/ 			__nccwpck_require__.d(getter, { a: getter });
-/******/ 			return getter;
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
-/******/ 		__nccwpck_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 				}
-/******/ 			}
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__nccwpck_require__.o = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop)
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
