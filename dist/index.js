@@ -53,18 +53,14 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
 
     const number = core.getInput('number');
     const identifier = core.getInput('id');
-    const message = core.getInput('message');
     const append = core.getInput('append');
     const variables = core.getInput('variables');
     const githubToken = core.getInput('github-token');
+    let message = core.getInput('message');
 
     const octokit = github.getOctokit(githubToken);
 
-    console.log(`repository = ${repository}`);
-    console.log(`repoOwner = ${repoOwner}, repoName = ${repoName}`);
-    console.log(`id = ${identifier}`);
-    console.log(`variables = ${variables}`);
-
+    console.log(`Checking if a comment already exists for ${identifier}.`);
     const matchingComment = await findMatchingComment({
       octokit,
       owner: repoOwner,
@@ -73,9 +69,12 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
       identifier,
     });
 
-    console.log(`matchingComment = ${matchingComment}`);
+    if (append === 'true' && matchingComment) {
+      message = `${matchingComment.body}\n${message}`
+    }
 
     if (matchingComment) {
+      console.log(`Found a comment for ${identifier} and updating it.`);
       await octokit.issues.updateComment({
         owner: repoOwner,
         repo: repoName,
@@ -85,6 +84,7 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
       return;
     }
 
+    console.log(`Creating a new comment for ${identifier}`);
     await octokit.issues.createComment({
       owner: repoOwner,
       repo: repoName,

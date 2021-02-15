@@ -14,11 +14,34 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Single comment on an issue or PR
+
+      - name: Single comment create
         uses: hasura/comment-progress@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'hasura/comment-progress'
           number: ${{ github.event.inputs.number }}
           id: single-comment
-          message: 'Just a plain simple comment to progress report'
+          message: 'Just a plain simple comment to report progress'
+
+      - name: Do some work
+        run: echo "this step just prints this"
+
+      - name: Single comment update
+        uses: hasura/comment-progress@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: 'hasura/comment-progress'
+          number: ${{ github.event.inputs.number }}
+          id: single-comment
+          message: 'The comment is updated.'
+
+      - name: Single comment append
+        uses: hasura/comment-progress@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: 'hasura/comment-progress'
+          number: ${{ github.event.inputs.number }}
+          id: single-comment
+          append: true
+          message: 'The comment will be updated with this text.'
