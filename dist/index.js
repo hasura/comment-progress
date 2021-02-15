@@ -79,10 +79,10 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
     let comment = `${getCommentPrefix(identifier)}`;
 
     if (append === 'true' && matchingComment) {
-      comment = `${comment}\n\n${matchingComment.body}`;
+      comment = `${matchingComment.body}`;
     }
 
-    comment = `${comment}\n\n${message}`;
+    comment = `${comment}\n${message}`;
 
     if (matchingComment) {
       console.log(`Found a comment for ${identifier} and updating it.`);
