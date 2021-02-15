@@ -75,7 +75,7 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
 
     console.log(`matchingComment = ${matchingComment}`);
 
-    if (!matchingComment) {
+    if (matchingComment) {
       await octokit.issues.updateComment({
         owner: repoOwner,
         repo: repoName,

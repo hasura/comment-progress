@@ -34,7 +34,7 @@ import { findMatchingComment } from './comment';
 
     console.log(`matchingComment = ${matchingComment}`);
 
-    if (!matchingComment) {
+    if (matchingComment) {
       await octokit.issues.updateComment({
         owner: repoOwner,
         repo: repoName,
