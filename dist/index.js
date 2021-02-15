@@ -11,8 +11,6 @@ __nccwpck_require__.r(__webpack_exports__);
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(186);
-var core_default = /*#__PURE__*/__nccwpck_require__.n(core);
-
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __nccwpck_require__(438);
 var github_default = /*#__PURE__*/__nccwpck_require__.n(github);
@@ -49,24 +47,24 @@ async function findMatchingComment({ owner, repo, issue_number, identifier}) {
 
 
 try {
-  const repository = core_default().getInput('repository');
+  const repository = core.getInput('repository');
   const [repoOwner, repoName] = repository.split('/');
   if (!repoOwner || !repoName) {
     throw new Error(`Invalid repository: ${repository}`);
   }
 
-  const number = core_default().getInput('number');
-  const identifier = core_default().getInput('id');
-  const message = core_default().getInput('message');
-  const append = core_default().getInput('append');
-  const variables = core_default().getInput('variables');
+  const number = core.getInput('number');
+  const identifier = core.getInput('id');
+  const message = core.getInput('message');
+  const append = core.getInput('append');
+  const variables = core.getInput('variables');
 
   console.log(`repository = ${repository}`);
   console.log(`repoOwner = ${repoOwner}, repoName = ${repoName}`);
   console.log(`id = ${id}`);
   console.log(`variables = ${variables}`);
 } catch (error) {
-  core_default().setFailed(error.message);
+  core.setFailed(error.message);
 }
 
 (async () => {
@@ -80,7 +78,7 @@ try {
 
     console.log(`matchingComment = ${matchingComment}`);
   } catch (error) {
-    core_default().setFailed(error.message);
+    core.setFailed(error.message);
   }
 })();
 
