@@ -18,14 +18,15 @@ var github_default = /*#__PURE__*/__nccwpck_require__.n(github);
 // CONCATENATED MODULE: ./comment.js
 
 
-async function findMatchingComment({ owner, repo, issue_number, identifier}) {
+async function findMatchingComment({ token, owner, repo, issue_number, identifier}) {
   let fetchMoreComments = true;
   let page = 0;
   let mathingComment;
   const commentPrefix = `<!-- ${identifier}: do not delete/edit this line -->`;
+  const octokit = github_default().getOctokit(token);
   while (fetchMoreComments) {
     page += 1;
-    const comments = await github_default().issues.listComments({
+    const comments = await octokit.issues.listComments({
       owner,
       repo,
       issue_number,
@@ -59,6 +60,7 @@ async function findMatchingComment({ owner, repo, issue_number, identifier}) {
     const message = core.getInput('message');
     const append = core.getInput('append');
     const variables = core.getInput('variables');
+    const githubToken = core.getInput('github-token');
 
     console.log(`repository = ${repository}`);
     console.log(`repoOwner = ${repoOwner}, repoName = ${repoName}`);
@@ -66,6 +68,7 @@ async function findMatchingComment({ owner, repo, issue_number, identifier}) {
     console.log(`variables = ${variables}`);
 
     const matchingComment = await findMatchingComment({
+      token: githubToken,
       owner: repoOwner,
       repo: repoName,
       issue_number: number,
@@ -76,7 +79,7 @@ async function findMatchingComment({ owner, repo, issue_number, identifier}) {
   } catch (error) {
     console.error(error);
     core.setFailed(error.message);
-  }  
+  }
 })();
 
 

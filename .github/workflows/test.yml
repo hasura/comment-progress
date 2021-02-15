@@ -17,6 +17,7 @@ jobs:
       - name: Single comment on an issue or PR
         uses: hasura/comment-progress@main
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'hasura/comment-progress'
           number: ${{ github.event.inputs.number }}
           id: single-comment

@@ -14,6 +14,7 @@ import { findMatchingComment } from './comment';
     const message = core.getInput('message');
     const append = core.getInput('append');
     const variables = core.getInput('variables');
+    const githubToken = core.getInput('github-token');
 
     console.log(`repository = ${repository}`);
     console.log(`repoOwner = ${repoOwner}, repoName = ${repoName}`);
@@ -21,6 +22,7 @@ import { findMatchingComment } from './comment';
     console.log(`variables = ${variables}`);
 
     const matchingComment = await findMatchingComment({
+      token: githubToken,
       owner: repoOwner,
       repo: repoName,
       issue_number: number,
@@ -31,5 +33,5 @@ import { findMatchingComment } from './comment';
   } catch (error) {
     console.error(error);
     core.setFailed(error.message);
-  }  
+  }
 })();

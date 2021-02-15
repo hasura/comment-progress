@@ -1,6 +1,9 @@
 name: 'Comment Progress'
 description: 'Notify progress with GitHub Issue/PR comment(s).'
 inputs:
+  github-token:
+    description: 'Github token'
+    required: true
   repository:
     description: 'Github repository'
     required: true
