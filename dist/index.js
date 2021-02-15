@@ -95,7 +95,7 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
       });
 
       if (fail === 'true') {
-        core.setFailed(comment);
+        core.setFailed(message);
       }
       return;
     }
@@ -109,7 +109,7 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
     });
 
     if (fail === 'true') {
-      core.setFailed(comment);
+      core.setFailed(message);
     }
   } catch (error) {
     console.error(error);

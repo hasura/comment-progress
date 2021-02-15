@@ -47,7 +47,7 @@ import { getCommentPrefix } from './identifier';
       });
 
       if (fail === 'true') {
-        core.setFailed(comment);
+        core.setFailed(message);
       }
       return;
     }
@@ -61,7 +61,7 @@ import { getCommentPrefix } from './identifier';
     });
 
     if (fail === 'true') {
-      core.setFailed(comment);
+      core.setFailed(message);
     }
   } catch (error) {
     console.error(error);
