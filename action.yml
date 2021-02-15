@@ -21,4 +21,4 @@ inputs:
     description: 'Input variables used for templating the message'
 runs:
   using: 'node12'
-  main: 'index.js'
+  main: 'dist/index.js'
