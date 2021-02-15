@@ -13,16 +13,17 @@ try {
   const message = core.getInput('message');
   const append = core.getInput('append');
   const variables = core.getInput('variables');
-
-  console.log(`repository = ${repository}`);
-  console.log(`repoOwner = ${repoOwner}, repoName = ${repoName}`);
-  console.log(`id = ${id}`);
-  console.log(`variables = ${variables}`);
 } catch (error) {
+  console.error(error);
   core.setFailed(error.message);
 }
 
 (async () => {
+  console.log(`repository = ${repository}`);
+  console.log(`repoOwner = ${repoOwner}, repoName = ${repoName}`);
+  console.log(`id = ${identifier}`);
+  console.log(`variables = ${variables}`);
+
   try {
     const matchingComment = await findMatchingComment({
       owner: repoOwner,
