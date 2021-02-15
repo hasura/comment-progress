@@ -14,6 +14,7 @@ import { getCommentPrefix } from './identifier';
     const number = core.getInput('number');
     const identifier = core.getInput('id');
     const append = core.getInput('append');
+    const fail = core.getInput('fail');
     const githubToken = core.getInput('github-token');
     const message = core.getInput('message');
 
@@ -44,6 +45,10 @@ import { getCommentPrefix } from './identifier';
         comment_id: matchingComment.id,
         body: comment,
       });
+
+      if (fail === 'true') {
+        core.setFailed(comment);
+      }
       return;
     }
 
@@ -54,6 +59,10 @@ import { getCommentPrefix } from './identifier';
       issue_number: number,
       body: comment,
     });
+
+    if (fail === 'true') {
+      core.setFailed(comment);
+    }
   } catch (error) {
     console.error(error);
     core.setFailed(error.message);

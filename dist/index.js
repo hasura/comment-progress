@@ -62,6 +62,7 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
     const number = core.getInput('number');
     const identifier = core.getInput('id');
     const append = core.getInput('append');
+    const fail = core.getInput('fail');
     const githubToken = core.getInput('github-token');
     const message = core.getInput('message');
 
@@ -92,6 +93,10 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
         comment_id: matchingComment.id,
         body: comment,
       });
+
+      if (fail === 'true') {
+        core.setFailed(comment);
+      }
       return;
     }
 
@@ -102,6 +107,10 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
       issue_number: number,
       body: comment,
     });
+
+    if (fail === 'true') {
+      core.setFailed(comment);
+    }
   } catch (error) {
     console.error(error);
     core.setFailed(error.message);

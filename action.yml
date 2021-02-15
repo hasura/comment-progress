@@ -16,6 +16,8 @@ inputs:
   message:
     description: 'Message to be commented'
     required: true
+  fail:
+    description: 'If true, the step will be marked as failure'
   append:
     description: 'If true, message will be appened to existing comment'
     required: false
