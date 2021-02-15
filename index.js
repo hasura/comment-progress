@@ -1,4 +1,5 @@
 import * as core from '@actions/core';
+import * as github from '@actions/github';
 import { findMatchingComment } from './comment';
 
 (async () => {
@@ -16,13 +17,15 @@ import { findMatchingComment } from './comment';
     const variables = core.getInput('variables');
     const githubToken = core.getInput('github-token');
 
+    const octokit = github.getOctokit(token);
+
     console.log(`repository = ${repository}`);
     console.log(`repoOwner = ${repoOwner}, repoName = ${repoName}`);
     console.log(`id = ${identifier}`);
     console.log(`variables = ${variables}`);
 
     const matchingComment = await findMatchingComment({
-      token: githubToken,
+      octokit,
       owner: repoOwner,
       repo: repoName,
       issue_number: number,
@@ -30,6 +33,23 @@ import { findMatchingComment } from './comment';
     });
 
     console.log(`matchingComment = ${matchingComment}`);
+
+    if (!matchingComment) {
+      await octokit.issues.updateComment({
+        owner: repoOwner,
+        repo: repoName,
+        comment_id: matchingComment.id,
+        body: message,
+      });
+      return;
+    }
+
+    await octokit.issues.createComment({
+      owner: repoOwner,
+      repo: repoName,
+      issue_number: number,
+      body: message,
+    });
   } catch (error) {
     console.error(error);
     core.setFailed(error.message);

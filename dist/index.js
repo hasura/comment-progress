@@ -14,14 +14,11 @@ var core = __nccwpck_require__(186);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __nccwpck_require__(438);
 // CONCATENATED MODULE: ./comment.js
-
-
-async function findMatchingComment({ token, owner, repo, issue_number, identifier}) {
+async function findMatchingComment({ octokit, owner, repo, issue_number, identifier}) {
   let fetchMoreComments = true;
   let page = 0;
   let mathingComment;
   const commentPrefix = `<!-- ${identifier}: do not delete/edit this line -->`;
-  const octokit = github.getOctokit(token);
   while (fetchMoreComments) {
     page += 1;
     const comments = await octokit.issues.listComments({
@@ -45,6 +42,7 @@ async function findMatchingComment({ token, owner, repo, issue_number, identifie
 
 
 
+
 (async () => {
   try {
     const repository = core.getInput('repository');
@@ -60,13 +58,15 @@ async function findMatchingComment({ token, owner, repo, issue_number, identifie
     const variables = core.getInput('variables');
     const githubToken = core.getInput('github-token');
 
+    const octokit = github.getOctokit(token);
+
     console.log(`repository = ${repository}`);
     console.log(`repoOwner = ${repoOwner}, repoName = ${repoName}`);
     console.log(`id = ${identifier}`);
     console.log(`variables = ${variables}`);
 
     const matchingComment = await findMatchingComment({
-      token: githubToken,
+      octokit,
       owner: repoOwner,
       repo: repoName,
       issue_number: number,
@@ -74,6 +74,23 @@ async function findMatchingComment({ token, owner, repo, issue_number, identifie
     });
 
     console.log(`matchingComment = ${matchingComment}`);
+
+    if (!matchingComment) {
+      await octokit.issues.updateComment({
+        owner: repoOwner,
+        repo: repoName,
+        comment_id: matchingComment.id,
+        body: message,
+      });
+      return;
+    }
+
+    await octokit.issues.createComment({
+      owner: repoOwner,
+      repo: repoName,
+      issue_number: number,
+      body: message,
+    });
   } catch (error) {
     console.error(error);
     core.setFailed(error.message);
