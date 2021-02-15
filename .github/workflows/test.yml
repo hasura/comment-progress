@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Single comment create
-        uses: hasura/comment-progress@main
+        uses: hasura/comment-progress@test
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'hasura/comment-progress'
@@ -28,7 +28,7 @@ jobs:
         run: echo "this step just prints this"
 
       - name: Single comment update
-        uses: hasura/comment-progress@main
+        uses: hasura/comment-progress@test
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'hasura/comment-progress'
@@ -37,7 +37,7 @@ jobs:
           message: 'The comment is updated.'
 
       - name: Single comment append
-        uses: hasura/comment-progress@main
+        uses: hasura/comment-progress@test
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'hasura/comment-progress'
@@ -45,3 +45,20 @@ jobs:
           id: single-comment
           append: true
           message: 'The comment will be appended with this text.'
+
+  fail-comment:
+    runs-on: ubuntu-20.04
+    name: Fail comment progress
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Should comment and fail this job
+        uses: hasura/comment-progress@test
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: 'hasura/comment-progress'
+          number: ${{ github.event.inputs.number }}
+          id: fail-comment
+          fail: true
+          message: ':x: This comment is to denote an error'
