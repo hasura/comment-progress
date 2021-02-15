@@ -1,8 +1,10 @@
+import {getCommentPrefix} from './identifier';
+
 export async function findMatchingComment({ octokit, owner, repo, issue_number, identifier}) {
   let fetchMoreComments = true;
   let page = 0;
   let mathingComment;
-  const commentPrefix = `<!-- ${identifier}: do not delete/edit this line -->`;
+  const commentPrefix = getCommentPrefix(identifier);
   while (fetchMoreComments) {
     page += 1;
     const comments = await octokit.issues.listComments({

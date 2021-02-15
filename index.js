@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { findMatchingComment } from './comment';
+import { getCommentPrefix } from './identifier';
 
 (async () => {
   try {
@@ -13,9 +14,8 @@ import { findMatchingComment } from './comment';
     const number = core.getInput('number');
     const identifier = core.getInput('id');
     const append = core.getInput('append');
-    const variables = core.getInput('variables');
     const githubToken = core.getInput('github-token');
-    let message = core.getInput('message');
+    const message = core.getInput('message');
 
     const octokit = github.getOctokit(githubToken);
 
@@ -28,9 +28,13 @@ import { findMatchingComment } from './comment';
       identifier,
     });
 
+    let comment = `${getCommentPrefix(identifier)}`;
+
     if (append === 'true' && matchingComment) {
-      message = `${matchingComment.body}\n${message}`
+      comment = `${comment}\n\n${matchingComment.body}`;
     }
+
+    comment = `${comment}\n\n${message}`;
 
     if (matchingComment) {
       console.log(`Found a comment for ${identifier} and updating it.`);
@@ -38,7 +42,7 @@ import { findMatchingComment } from './comment';
         owner: repoOwner,
         repo: repoName,
         comment_id: matchingComment.id,
-        body: message,
+        body: comment,
       });
       return;
     }
@@ -48,7 +52,7 @@ import { findMatchingComment } from './comment';
       owner: repoOwner,
       repo: repoName,
       issue_number: number,
-      body: message,
+      body: comment,
     });
   } catch (error) {
     console.error(error);

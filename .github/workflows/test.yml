@@ -44,4 +44,4 @@ jobs:
           number: ${{ github.event.inputs.number }}
           id: single-comment
           append: true
-          message: 'The comment will be updated with this text.'
+          message: 'The comment will be appended with this text.'

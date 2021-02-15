@@ -2,7 +2,7 @@ module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 60:
+/***/ 383:
 /***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
 
 "use strict";
@@ -13,12 +13,19 @@ __nccwpck_require__.r(__webpack_exports__);
 var core = __nccwpck_require__(186);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __nccwpck_require__(438);
+// CONCATENATED MODULE: ./identifier.js
+function getCommentPrefix(identifier) {
+  return `<!-- ${identifier}: do not delete/edit this line -->`;
+}
+
 // CONCATENATED MODULE: ./comment.js
+
+
 async function findMatchingComment({ octokit, owner, repo, issue_number, identifier}) {
   let fetchMoreComments = true;
   let page = 0;
   let mathingComment;
-  const commentPrefix = `<!-- ${identifier}: do not delete/edit this line -->`;
+  const commentPrefix = getCommentPrefix(identifier);
   while (fetchMoreComments) {
     page += 1;
     const comments = await octokit.issues.listComments({
@@ -43,6 +50,7 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
 
 
 
+
 (async () => {
   try {
     const repository = core.getInput('repository');
@@ -54,9 +62,8 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
     const number = core.getInput('number');
     const identifier = core.getInput('id');
     const append = core.getInput('append');
-    const variables = core.getInput('variables');
     const githubToken = core.getInput('github-token');
-    let message = core.getInput('message');
+    const message = core.getInput('message');
 
     const octokit = github.getOctokit(githubToken);
 
@@ -69,9 +76,13 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
       identifier,
     });
 
+    let comment = `${getCommentPrefix(identifier)}`;
+
     if (append === 'true' && matchingComment) {
-      message = `${matchingComment.body}\n${message}`
+      comment = `${comment}\n\n${matchingComment.body}`;
     }
+
+    comment = `${comment}\n\n${message}`;
 
     if (matchingComment) {
       console.log(`Found a comment for ${identifier} and updating it.`);
@@ -79,7 +90,7 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
         owner: repoOwner,
         repo: repoName,
         comment_id: matchingComment.id,
-        body: message,
+        body: comment,
       });
       return;
     }
@@ -89,7 +100,7 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
       owner: repoOwner,
       repo: repoName,
       issue_number: number,
-      body: message,
+      body: comment,
     });
   } catch (error) {
     console.error(error);
@@ -6042,6 +6053,6 @@ module.exports = require("zlib");;
 /******/ 	// module exports must be returned from runtime so entry inlining is disabled
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
-/******/ 	return __nccwpck_require__(60);
+/******/ 	return __nccwpck_require__(383);
 /******/ })()
 ;
