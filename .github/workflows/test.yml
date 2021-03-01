@@ -8,47 +8,115 @@ on:
         required: true
 
 jobs:
-  single-comment:
+  normal-mode:
     runs-on: ubuntu-20.04
-    name: Single comment progress
+    name: Normal mode progress
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Single comment create
+      - name: normal mode - create comment
         uses: hasura/comment-progress@test
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'hasura/comment-progress'
           number: ${{ github.event.inputs.number }}
-          id: single-comment
-          message: 'Just a plain simple comment to report progress'
+          id: normal-mode-comment
+          message: 'normal mode - create comment'
 
       - name: Do some work
         run: echo "this step just prints this"
 
-      - name: Single comment update
+      - name: normal mode - update comment
         uses: hasura/comment-progress@test
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'hasura/comment-progress'
           number: ${{ github.event.inputs.number }}
-          id: single-comment
-          message: 'The comment is updated.'
+          id: normal-mode-comment
+          message: 'normal mode - update comment'
 
-      - name: Single comment append
+  append-mode:
+    runs-on: ubuntu-20.04
+    name: Append mode progress
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: append mode - create comment
         uses: hasura/comment-progress@test
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'hasura/comment-progress'
           number: ${{ github.event.inputs.number }}
-          id: single-comment
+          id: append-mode-comment
+          message: 'append mode - create comment'
+
+      - name: Do some work
+        run: echo "this step just prints this"
+
+      - name: append mode - append comment
+        uses: hasura/comment-progress@test
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: 'hasura/comment-progress'
+          number: ${{ github.event.inputs.number }}
+          id: append-mode-comment
           append: true
-          message: 'The comment will be appended with this text.'
+          message: 'append mode - appended message to the create comment'
+
+  recreate-mode:
+    runs-on: ubuntu-20.04
+    name: Recreate mode progress
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: recreate mode - create comment
+        uses: hasura/comment-progress@test
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: 'hasura/comment-progress'
+          number: ${{ github.event.inputs.number }}
+          id: recreate-mode-comment
+          message: 'recreate mode - create comment'
+
+      - name: Do some work
+        run: echo "this step just prints this"
+
+      - name: recreate mode - append comment
+        uses: hasura/comment-progress@test
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: 'hasura/comment-progress'
+          number: ${{ github.event.inputs.number }}
+          id: recreate-mode-comment
+          recreate: true
+          message: 'recreate mode - latest comment (should be posted after deleting the create comment)'
+
+  fail-mode:
+    runs-on: ubuntu-20.04
+    name: Fail on invalid modes
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Should error out and not comment anything
+        uses: hasura/comment-progress@test
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: 'hasura/comment-progress'
+          number: ${{ github.event.inputs.number }}
+          id: fail-mode-comment
+          recreate: true
+          append: true
+          message: 'should error out as recreate and append mode could not be used together.'
 
   fail-comment:
     runs-on: ubuntu-20.04
     name: Fail comment progress
+    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -61,4 +129,4 @@ jobs:
           number: ${{ github.event.inputs.number }}
           id: fail-comment
           fail: true
-          message: ':x: This comment is to denote an error'
+          message: ':x: This comment is to denote an error.'
