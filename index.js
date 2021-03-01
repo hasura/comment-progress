@@ -1,64 +1,46 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { findMatchingComment } from './comment';
-import { getCommentPrefix } from './identifier';
+import { normalMode, recreateMode, appendMode } from './modes';
 
 (async () => {
   try {
     const repository = core.getInput('repository');
-    const [repoOwner, repoName] = repository.split('/');
-    if (!repoOwner || !repoName) {
+    const [owner, repo] = repository.split('/');
+    if (!owner || !repo) {
       throw new Error(`Invalid repository: ${repository}`);
     }
 
     const number = core.getInput('number');
     const identifier = core.getInput('id');
     const append = core.getInput('append');
+    const recreate = core.getInput('recreate');
     const fail = core.getInput('fail');
     const githubToken = core.getInput('github-token');
     const message = core.getInput('message');
 
+    let mode = 'normal';
+
+    if (append === 'true' && recreate === 'true') {
+      core.setFailed('Not allowed to set both `append` and `recreate` to true.');
+      return;
+    } else if (recreate === 'true') {
+      mode = 'recreate';
+    } else if (append === 'true') {
+      mode = 'append';
+    }
+
     const octokit = github.getOctokit(githubToken);
 
-    console.log(`Checking if a comment already exists for ${identifier}.`);
-    const matchingComment = await findMatchingComment({
-      octokit,
-      owner: repoOwner,
-      repo: repoName,
-      issue_number: number,
-      identifier,
-    });
-
-    let comment = `${getCommentPrefix(identifier)}`;
-
-    if (append === 'true' && matchingComment) {
-      comment = `${matchingComment.body}`;
+    switch (mode) {
+      case 'normal':
+        await normalMode({octokit, owner, repo, number, identifier, message});
+        break;
+      case 'recreate':
+        await recreateMode({octokit, owner, repo, number, identifier, message});
+        break;
+      case 'append':
+        await appendMode({octokit, owner, repo, number, identifier, message});
     }
-
-    comment = `${comment}\n${message}`;
-
-    if (matchingComment) {
-      console.log(`Updating an existing comment for ${identifier}.`);
-      await octokit.issues.updateComment({
-        owner: repoOwner,
-        repo: repoName,
-        comment_id: matchingComment.id,
-        body: comment,
-      });
-
-      if (fail === 'true') {
-        core.setFailed(message);
-      }
-      return;
-    }
-
-    console.log(`Creating a new comment for ${identifier}.`);
-    await octokit.issues.createComment({
-      owner: repoOwner,
-      repo: repoName,
-      issue_number: number,
-      body: comment,
-    });
 
     if (fail === 'true') {
       core.setFailed(message);
