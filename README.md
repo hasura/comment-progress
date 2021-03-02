@@ -166,7 +166,7 @@ jobs:
 
 ## Contributing
 
-Contributions are welcomed :pray: Please [open an issue](https://github.com/hasura/comment-progress/issues/new) before working on something big or breaking.
+Contributions are welcome :pray: Please [open an issue](https://github.com/hasura/comment-progress/issues/new) before working on something big or breaking.
 
 After making changes to the source code, you will need to perform a packaging step manually by doing the following.
 
