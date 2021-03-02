@@ -57,9 +57,9 @@ If the workflow succeeds, the bot comments the details of the preview environmen
 ```
 
 ## Scenarios
-- Make a simple comment on an issue or pull request
-- Make a comment and append updates to the same comment
-- Delete older/stale comment and add a new comment
+- [Make a simple comment on an issue or pull request](#make-a-simple-comment-on-an-issue-or-pull-request)
+- [Make a comment and append updates to the same comment](#make-a-comment-and-append-updates-to-the-same-comment)
+- [Delete older/stale comment and add a new comment](#delete-olderstale-comment-and-add-a-new-comment)
 
 ### Make a simple comment on an issue or pull request
 
