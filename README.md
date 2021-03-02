@@ -163,3 +163,20 @@ jobs:
           message: 'Deployment of a preview for this pull request was successful.'
           recreate: true 
 ```
+
+## Contributing
+
+Contributions are welcomed :pray: Please [open an issue](https://github.com/hasura/comment-progress/issues/new) before working on something big or breaking.
+
+After making changes to the source code, you will need to perform a packaging step manually by doing the following.
+
+```bash
+npm install
+npm run build
+
+git add . 
+git commit -m "generates dist for updated code"
+```
+
+
+
