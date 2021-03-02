@@ -6,7 +6,7 @@ GitHub Action to notify progress with GitHub Issue/PR comment(s).
 
 Commenting inspired  by GitHub bots like [netlify](https://github.com/apps/netlify), [sonarcloud](https://github.com/apps/sonarcloud) etc.
 
-Used at Hasura to relay progress of long running GitHub Action workflows on a pull request.
+Used at [Hasura](https://hasura.io/) to relay progress of long running GitHub Action workflows on a pull request.
 
 ## Use case
 
