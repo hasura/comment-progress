@@ -9,14 +9,6 @@ module.exports =
 // ESM COMPAT FLAG
 __nccwpck_require__.r(__webpack_exports__);
 
-// NAMESPACE OBJECT: ./modes.js
-var modes_namespaceObject = {};
-__nccwpck_require__.r(modes_namespaceObject);
-__nccwpck_require__.d(modes_namespaceObject, {
-  "p": () => normalMode,
-  "u": () => recreateMode
-});
-
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(186);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
@@ -29,7 +21,7 @@ function getCommentPrefix(identifier) {
 // CONCATENATED MODULE: ./comment.js
 
 
-async function comment_findMatchingComment({octokit, owner, repo, issue_number, identifier}) {
+async function findMatchingComment({octokit, owner, repo, issue_number, identifier}) {
   const matchingComments = await findMatchingComments({octokit, owner, repo, issue_number, identifier});
   let matchingComment;
   if (matchingComments && matchingComments.length > 0) {
@@ -69,7 +61,7 @@ async function findMatchingComments({octokit, owner, repo, issue_number, identif
 // and updates the matching comment if found
 async function normalMode({octokit, owner, repo, number, identifier, message}) {
     console.log(`Checking if a comment already exists for ${identifier}.`);
-    const matchingComment = await comment_findMatchingComment({
+    const matchingComment = await findMatchingComment({
       octokit,
       owner,
       repo,
@@ -207,7 +199,7 @@ async function normalMode({octokit, owner, repo, number, identifier, message}) {
         await recreateMode({octokit, owner, repo, number, identifier, message});
         break;
       case 'append':
-        await (0,modes_namespaceObject.appendMode)({octokit, owner, repo, number, identifier, message});
+        await appendMode({octokit, owner, repo, number, identifier, message});
     }
 
     if (fail === 'true') {
@@ -6147,23 +6139,6 @@ module.exports = require("zlib");;
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
-/******/ 		__nccwpck_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 				}
-/******/ 			}
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__nccwpck_require__.o = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop)
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports

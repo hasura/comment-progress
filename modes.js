@@ -70,7 +70,7 @@ export async function normalMode({octokit, owner, repo, number, identifier, mess
 
   // append mode creates a comment when there is no existing comment that match identifier
   // and appends message to a matching comment if found.
-  async function appendMode({octokit, owner, repo, number, identifier, message}) {
+  export async function appendMode({octokit, owner, repo, number, identifier, message}) {
     console.log(`Checking if a comment already exists for ${identifier}.`);
     const matchingComment = await findMatchingComment({
       octokit,
