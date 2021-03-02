@@ -8,9 +8,9 @@ Commenting inspired  by GitHub bots like [netlify](https://github.com/apps/netli
 
 Used at Hasura to relay progress of long running GitHub Action workflows on a pull request.
 
-Example: when deploying preview app for a pull request
+## Use case
 
-The GitHub workflow starts by commenting 
+When deploying preview for a pull request, the GitHub workflow starts by commenting 
 
 ![review-app-start](images/review-app-start.png)
 
@@ -21,8 +21,6 @@ As the job progresses and if there is a failure at some step, the bot appends th
 If the workflow succeeds, the bot comments the details of the preview environment. (configurable to be a new comment or an update to the previous comment that reported the progress)
 
 ![review-app-end](images/review-app-end.png)
-
-
 
 ## Usage
 ```yml
