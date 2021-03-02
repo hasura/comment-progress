@@ -2,12 +2,20 @@ module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 383:
+/***/ 794:
 /***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
 
 "use strict";
 // ESM COMPAT FLAG
 __nccwpck_require__.r(__webpack_exports__);
+
+// NAMESPACE OBJECT: ./modes.js
+var modes_namespaceObject = {};
+__nccwpck_require__.r(modes_namespaceObject);
+__nccwpck_require__.d(modes_namespaceObject, {
+  "p": () => normalMode,
+  "u": () => recreateMode
+});
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(186);
@@ -21,10 +29,19 @@ function getCommentPrefix(identifier) {
 // CONCATENATED MODULE: ./comment.js
 
 
-async function findMatchingComment({ octokit, owner, repo, issue_number, identifier}) {
+async function comment_findMatchingComment({octokit, owner, repo, issue_number, identifier}) {
+  const matchingComments = await findMatchingComments({octokit, owner, repo, issue_number, identifier});
+  let matchingComment;
+  if (matchingComments && matchingComments.length > 0) {
+    matchingComment = matchingComments[matchingComments.length-1];
+  }
+  return matchingComment;
+}
+
+async function findMatchingComments({octokit, owner, repo, issue_number, identifier}) {
   let fetchMoreComments = true;
   let page = 0;
-  let mathingComment;
+  let mathingComments = [];
   const commentPrefix = getCommentPrefix(identifier);
   while (fetchMoreComments) {
     page += 1;
@@ -38,15 +55,117 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
     fetchMoreComments = comments.data.length !== 0;
     for (let comment of comments.data) {
       if (comment.body.startsWith(commentPrefix)) {
-        mathingComment = comment;
+        mathingComments.push(comment);
       }
     }
   }
-  return mathingComment;
+  return mathingComments;
 }
+// CONCATENATED MODULE: ./modes.js
 
+
+
+// normal mode creates a comment when there is no existing comment that match identifier
+// and updates the matching comment if found
+async function normalMode({octokit, owner, repo, number, identifier, message}) {
+    console.log(`Checking if a comment already exists for ${identifier}.`);
+    const matchingComment = await comment_findMatchingComment({
+      octokit,
+      owner,
+      repo,
+      issue_number: number,
+      identifier,
+    });
+  
+    const comment = `${getCommentPrefix(identifier)}\n${message}`;
+  
+    if (matchingComment) {
+      console.log(`Updating an existing comment for ${identifier}.`);
+      await octokit.issues.updateComment({
+        owner,
+        repo,
+        comment_id: matchingComment.id,
+        body: comment,
+      });
+      return;
+    }
+  
+    console.log(`Creating a new comment for ${identifier}.`);
+    await octokit.issues.createComment({
+      owner: owner,
+      repo: repo,
+      issue_number: number,
+      body: comment,
+    });
+  }
+  
+  // recreate mode deletes existing comments that match the idemtifier
+  // and create a new comment
+  async function recreateMode({octokit, owner, repo, number, identifier, message}) {
+    console.log(`Finding matching comments for ${identifier}.`);
+    const matchingComments = await findMatchingComments({
+      octokit,
+      owner,
+      repo,
+      issue_number: number,
+      identifier,
+    });
+  
+    for (let comment of matchingComments) {
+      console.log(`Deleting github comment ${comment.id}`);
+      await octokit.issues.deleteComment({
+        owner,
+        repo,
+        comment_id: comment.id,
+      });
+    }
+  
+    const comment = `${getCommentPrefix(identifier)}\n${message}`;
+  
+    console.log(`Creating a new comment for ${identifier}.`);
+    await octokit.issues.createComment({
+      owner: owner,
+      repo: repo,
+      issue_number: number,
+      body: comment,
+    });
+  }
+  
+
+  // append mode creates a comment when there is no existing comment that match identifier
+  // and appends message to a matching comment if found.
+  async function appendMode({octokit, owner, repo, number, identifier, message}) {
+    console.log(`Checking if a comment already exists for ${identifier}.`);
+    const matchingComment = await findMatchingComment({
+      octokit,
+      owner,
+      repo,
+      issue_number: number,
+      identifier,
+    });
+  
+    const comment = `${matchingComment.body}\n${message}`;
+  
+    if (matchingComment) {
+      console.log(`Updating an existing comment for ${identifier}.`);
+      await octokit.issues.updateComment({
+        owner,
+        repo,
+        comment_id: matchingComment.id,
+        body: comment,
+      });
+      return;
+    }
+  
+    console.log(`Creating a new comment for ${identifier}.`);
+    await octokit.issues.createComment({
+      owner: owner,
+      repo: repo,
+      issue_number: number,
+      body: comment,
+    });
+  }
 // CONCATENATED MODULE: ./index.js
-
 
 
 
@@ -54,59 +173,42 @@ async function findMatchingComment({ octokit, owner, repo, issue_number, identif
 (async () => {
   try {
     const repository = core.getInput('repository');
-    const [repoOwner, repoName] = repository.split('/');
-    if (!repoOwner || !repoName) {
+    const [owner, repo] = repository.split('/');
+    if (!owner || !repo) {
       throw new Error(`Invalid repository: ${repository}`);
     }
 
     const number = core.getInput('number');
     const identifier = core.getInput('id');
     const append = core.getInput('append');
+    const recreate = core.getInput('recreate');
     const fail = core.getInput('fail');
     const githubToken = core.getInput('github-token');
     const message = core.getInput('message');
 
+    let mode = 'normal';
+
+    if (append === 'true' && recreate === 'true') {
+      core.setFailed('Not allowed to set both `append` and `recreate` to true.');
+      return;
+    } else if (recreate === 'true') {
+      mode = 'recreate';
+    } else if (append === 'true') {
+      mode = 'append';
+    }
+
     const octokit = github.getOctokit(githubToken);
 
-    console.log(`Checking if a comment already exists for ${identifier}.`);
-    const matchingComment = await findMatchingComment({
-      octokit,
-      owner: repoOwner,
-      repo: repoName,
-      issue_number: number,
-      identifier,
-    });
-
-    let comment = `${getCommentPrefix(identifier)}`;
-
-    if (append === 'true' && matchingComment) {
-      comment = `${matchingComment.body}`;
+    switch (mode) {
+      case 'normal':
+        await normalMode({octokit, owner, repo, number, identifier, message});
+        break;
+      case 'recreate':
+        await recreateMode({octokit, owner, repo, number, identifier, message});
+        break;
+      case 'append':
+        await (0,modes_namespaceObject.appendMode)({octokit, owner, repo, number, identifier, message});
     }
-
-    comment = `${comment}\n${message}`;
-
-    if (matchingComment) {
-      console.log(`Updating an existing comment for ${identifier}.`);
-      await octokit.issues.updateComment({
-        owner: repoOwner,
-        repo: repoName,
-        comment_id: matchingComment.id,
-        body: comment,
-      });
-
-      if (fail === 'true') {
-        core.setFailed(message);
-      }
-      return;
-    }
-
-    console.log(`Creating a new comment for ${identifier}.`);
-    await octokit.issues.createComment({
-      owner: repoOwner,
-      repo: repoName,
-      issue_number: number,
-      body: comment,
-    });
 
     if (fail === 'true') {
       core.setFailed(message);
@@ -6045,6 +6147,23 @@ module.exports = require("zlib");;
 /******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__nccwpck_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__nccwpck_require__.o = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop)
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
@@ -6062,6 +6181,6 @@ module.exports = require("zlib");;
 /******/ 	// module exports must be returned from runtime so entry inlining is disabled
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
-/******/ 	return __nccwpck_require__(383);
+/******/ 	return __nccwpck_require__(794);
 /******/ })()
 ;
