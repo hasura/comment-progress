@@ -1,5 +1,8 @@
 name: 'Comment Progress'
 description: 'Notify progress with GitHub Issue/PR comment(s).'
+branding:
+  icon: message-square
+  color: white
 inputs:
   github-token:
     description: 'Github token'
