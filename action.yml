@@ -22,8 +22,10 @@ inputs:
     description: 'If true, message will be appened to existing comment'
     required: false
     default: false
-  variables:
-    description: 'Input variables used for templating the message'
+  recreate:
+    description: 'If true, message will be commented after deleting existing comment'
+    required: false
+    default: false
 runs:
   using: 'node12'
   main: 'dist/index.js'
