@@ -132,7 +132,11 @@ Take a case where you need to re-deploy a preview for your pull request and repo
 
 ```yml
 on:
-  workflow_dispatch
+  workflow_dispatch:
+    inputs:
+      number:
+        description: 'pull request number'
+        required: true
     
 jobs:
   deploy-preview:
@@ -144,7 +148,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'my-org/my-repo'
-          number: ${{ github.event.number }}
+          number: ${{ github.event.inputs.number }}
           id: deploy-preview
           message: 'Starting deployment of this pull request.'
 
@@ -158,7 +162,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'my-org/my-repo'
-          number: ${{ github.event.number }}
+          number: ${{ github.event.inputs.number }}
           id: deploy-preview
           message: 'Deployment of a preview for this pull request was successful.'
           recreate: true 
