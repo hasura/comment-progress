@@ -170,35 +170,41 @@ async function normalMode({octokit, owner, repo, number, identifier, message}) {
       throw new Error(`Invalid repository: ${repository}`);
     }
 
+    const modes = Object.freeze({
+        NORMAL:     'normal',
+        APPEND:     'append',
+        RECREATE:   'recreate'
+    });
+
     const number = core.getInput('number');
     const identifier = core.getInput('id');
-    const append = core.getInput('append');
-    const recreate = core.getInput('recreate');
+    const append = core.getInput(modes.APPEND);
+    const recreate = core.getInput(modes.RECREATE);
     const fail = core.getInput('fail');
     const githubToken = core.getInput('github-token');
     const message = core.getInput('message');
 
-    let mode = 'normal';
+    let mode = modes.NORMAL;
 
     if (append === 'true' && recreate === 'true') {
       core.setFailed('Not allowed to set both `append` and `recreate` to true.');
       return;
     } else if (recreate === 'true') {
-      mode = 'recreate';
+      mode = modes.RECREATE;
     } else if (append === 'true') {
-      mode = 'append';
+      mode = modes.APPEND;
     }
 
     const octokit = github.getOctokit(githubToken);
 
     switch (mode) {
-      case 'normal':
+      case modes.NORMAL:
         await normalMode({octokit, owner, repo, number, identifier, message});
         break;
-      case 'recreate':
+      case modes.RECREATE:
         await recreateMode({octokit, owner, repo, number, identifier, message});
         break;
-      case 'append':
+      case modes.APPEND:
         await appendMode({octokit, owner, repo, number, identifier, message});
     }
 
