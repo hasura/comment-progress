@@ -178,29 +178,20 @@ async function normalMode({octokit, owner, repo, number, identifier, message}) {
     const githubToken = core.getInput('github-token');
     const message = core.getInput('message');
 
-    let mode = 'normal';
+    let mode = normalMode;
 
     if (append === 'true' && recreate === 'true') {
       core.setFailed('Not allowed to set both `append` and `recreate` to true.');
       return;
     } else if (recreate === 'true') {
-      mode = 'recreate';
+      mode = recreateMode;
     } else if (append === 'true') {
-      mode = 'append';
+      mode = appendMode;
     }
 
     const octokit = github.getOctokit(githubToken);
 
-    switch (mode) {
-      case 'normal':
-        await normalMode({octokit, owner, repo, number, identifier, message});
-        break;
-      case 'recreate':
-        await recreateMode({octokit, owner, repo, number, identifier, message});
-        break;
-      case 'append':
-        await appendMode({octokit, owner, repo, number, identifier, message});
-    }
+    await mode({octokit, owner, repo, number, identifier, message});
 
     if (fail === 'true') {
       core.setFailed(message);
