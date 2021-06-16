@@ -12,7 +12,10 @@ inputs:
     required: true
   number:
     description: 'Github issue or pull request number'
-    required: true
+    required: false
+  commit:
+    description: 'Commit SHA'
+    require: false
   id:
     description: 'Unique identifier for the comment'
     required: true
