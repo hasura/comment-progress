@@ -13,7 +13,7 @@ inputs:
   number:
     description: 'Github issue or pull request number'
     required: false
-  commit:
+  commit-sha:
     description: 'Commit SHA'
     require: false
   id:
