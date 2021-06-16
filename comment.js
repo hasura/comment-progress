@@ -1,7 +1,17 @@
 import {getCommentPrefix} from './identifier';
 
-export async function findMatchingComment({octokit, owner, repo, issue_number, identifier}) {
-  const matchingComments = await findMatchingComments({octokit, owner, repo, issue_number, identifier});
+async function listComments(data, context, isCommitComment) {
+  if (!isCommitComment) {
+    data.issue_number = context;
+    await octokit.issues.listComments(data);
+  } else {
+    data.commit_sha = context;
+    await octokit.repos.listCommitComments(data);
+  }
+}
+
+export async function findMatchingComment({octokit, owner, repo, context, isCommitComment, identifier}) {
+  const matchingComments = await findMatchingComments({octokit, owner, repo, context, isCommitComment, identifier});
   let matchingComment;
   if (matchingComments && matchingComments.length > 0) {
     matchingComment = matchingComments[matchingComments.length-1];
@@ -9,26 +19,25 @@ export async function findMatchingComment({octokit, owner, repo, issue_number, i
   return matchingComment;
 }
 
-export async function findMatchingComments({octokit, owner, repo, issue_number, identifier}) {
+export async function findMatchingComments({octokit, owner, repo, context, isCommitComment, identifier}) {
   let fetchMoreComments = true;
   let page = 0;
-  let mathingComments = [];
+  let matchingComments = [];
   const commentPrefix = getCommentPrefix(identifier);
   while (fetchMoreComments) {
     page += 1;
-    const comments = await octokit.issues.listComments({
+    const comments = await listComments({
       owner,
       repo,
-      issue_number,
       per_page: 100,
       page,
-    });
+    }, context, isCommitComment);
     fetchMoreComments = comments.data.length !== 0;
     for (let comment of comments.data) {
       if (comment.body.startsWith(commentPrefix)) {
-        mathingComments.push(comment);
+        matchingComments.push(comment);
       }
     }
   }
-  return mathingComments;
+  return matchingComments;
 }

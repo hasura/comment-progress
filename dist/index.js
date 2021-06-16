@@ -21,8 +21,18 @@ function getCommentPrefix(identifier) {
 // CONCATENATED MODULE: ./comment.js
 
 
-async function findMatchingComment({octokit, owner, repo, issue_number, identifier}) {
-  const matchingComments = await findMatchingComments({octokit, owner, repo, issue_number, identifier});
+async function listComments(data, context, isCommitComment) {
+  if (!isCommitComment) {
+    data.issue_number = context;
+    await octokit.issues.listComments(data);
+  } else {
+    data.commit_sha = context;
+    await octokit.repos.listCommitComments(data);
+  }
+}
+
+async function findMatchingComment({octokit, owner, repo, context, isCommitComment, identifier}) {
+  const matchingComments = await findMatchingComments({octokit, owner, repo, context, isCommitComment, identifier});
   let matchingComment;
   if (matchingComments && matchingComments.length > 0) {
     matchingComment = matchingComments[matchingComments.length-1];
@@ -30,133 +40,160 @@ async function findMatchingComment({octokit, owner, repo, issue_number, identifi
   return matchingComment;
 }
 
-async function findMatchingComments({octokit, owner, repo, issue_number, identifier}) {
+async function findMatchingComments({octokit, owner, repo, context, isCommitComment, identifier}) {
   let fetchMoreComments = true;
   let page = 0;
-  let mathingComments = [];
+  let matchingComments = [];
   const commentPrefix = getCommentPrefix(identifier);
   while (fetchMoreComments) {
     page += 1;
-    const comments = await octokit.issues.listComments({
+    const comments = await listComments({
       owner,
       repo,
-      issue_number,
       per_page: 100,
       page,
-    });
+    }, context, isCommitComment);
     fetchMoreComments = comments.data.length !== 0;
     for (let comment of comments.data) {
       if (comment.body.startsWith(commentPrefix)) {
-        mathingComments.push(comment);
+        matchingComments.push(comment);
       }
     }
   }
-  return mathingComments;
+  return matchingComments;
 }
+
 // CONCATENATED MODULE: ./modes.js
 
 
 
+
+async function createComment(data, context, isCommitComment) {
+  if (!isCommitComment) {
+    data.issue_number = context;
+    await octokit.issues.createComment(data);
+  } else {
+    data.commit_sha = context;
+    await octokit.repos.createCommitComment(data);
+  }
+}
+
+async function deleteComment(data, isCommitComment) {
+  if (!isCommitComment) {
+    await octokit.issues.deleteComment(data);
+  } else {
+    await octokit.repos.deleteCommitComment(data);
+  }
+}
+
+async function updateComment(data, isCommitComment) {
+  if (!isCommitComment) {
+    await octokit.issues.updateComment(data);
+  } else {
+    await octokit.issues.updateCommitComment(data);
+  }
+}
+
 // normal mode creates a comment when there is no existing comment that match identifier
 // and updates the matching comment if found
-async function normalMode({octokit, owner, repo, number, identifier, message}) {
-    console.log(`Checking if a comment already exists for ${identifier}.`);
-    const matchingComment = await findMatchingComment({
-      octokit,
-      owner,
-      repo,
-      issue_number: number,
-      identifier,
-    });
-  
-    const comment = `${getCommentPrefix(identifier)}\n${message}`;
-  
-    if (matchingComment) {
-      console.log(`Updating an existing comment for ${identifier}.`);
-      await octokit.issues.updateComment({
-        owner,
-        repo,
-        comment_id: matchingComment.id,
-        body: comment,
-      });
-      return;
-    }
-  
-    console.log(`Creating a new comment for ${identifier}.`);
-    await octokit.issues.createComment({
-      owner: owner,
-      repo: repo,
-      issue_number: number,
-      body: comment,
-    });
-  }
-  
-  // recreate mode deletes existing comments that match the idemtifier
-  // and create a new comment
-  async function recreateMode({octokit, owner, repo, number, identifier, message}) {
-    console.log(`Finding matching comments for ${identifier}.`);
-    const matchingComments = await findMatchingComments({
-      octokit,
-      owner,
-      repo,
-      issue_number: number,
-      identifier,
-    });
-  
-    for (let comment of matchingComments) {
-      console.log(`Deleting github comment ${comment.id}`);
-      await octokit.issues.deleteComment({
-        owner,
-        repo,
-        comment_id: comment.id,
-      });
-    }
-  
-    const comment = `${getCommentPrefix(identifier)}\n${message}`;
-  
-    console.log(`Creating a new comment for ${identifier}.`);
-    await octokit.issues.createComment({
-      owner: owner,
-      repo: repo,
-      issue_number: number,
-      body: comment,
-    });
-  }
-  
+async function normalMode({octokit, owner, repo, context, isCommitComment, identifier, message}) {
+  console.log(`Checking if a comment already exists for ${identifier}.`);
+  const matchingComment = await findMatchingComment({
+    octokit,
+    owner,
+    repo,
+    context,
+    isCommitComment,
+    identifier,
+  });
 
-  // append mode creates a comment when there is no existing comment that match identifier
-  // and appends message to a matching comment if found.
-  async function appendMode({octokit, owner, repo, number, identifier, message}) {
-    console.log(`Checking if a comment already exists for ${identifier}.`);
-    const matchingComment = await findMatchingComment({
-      octokit,
+  const comment = `${getCommentPrefix(identifier)}\n${message}`;
+
+  if (matchingComment) {
+    console.log(`Updating an existing comment for ${identifier}.`);
+    await updateComment({
       owner,
       repo,
-      issue_number: number,
-      identifier,
-    });
-  
-    const comment = `${matchingComment.body}\n${message}`;
-  
-    if (matchingComment) {
-      console.log(`Updating an existing comment for ${identifier}.`);
-      await octokit.issues.updateComment({
-        owner,
-        repo,
-        comment_id: matchingComment.id,
-        body: comment,
-      });
-      return;
-    }
-  
-    console.log(`Creating a new comment for ${identifier}.`);
-    await octokit.issues.createComment({
-      owner: owner,
-      repo: repo,
-      issue_number: number,
-      body: comment,
-    });
+      comment,
+    }, isCommitComment);
+    return;
   }
+
+  console.log(`Creating a new comment for ${identifier}.`);
+  await createComment({
+    owner,
+    repo,
+    comment,
+  }, context, isCommitComment);
+}
+
+// recreate mode deletes existing comments that match the idemtifier
+// and create a new comment
+async function recreateMode({octokit, owner, repo, context, isCommitComment, identifier, message}) {
+  console.log(`Finding matching comments for ${identifier}.`);
+  const matchingComments = await findMatchingComments({
+    octokit,
+    owner,
+    repo,
+    context,
+    isCommitComment,
+    identifier,
+  });
+
+  for (let comment of matchingComments) {
+    console.log(`Deleting github comment ${comment.id}`);
+    await deleteComment({
+      owner,
+      repo,
+      comment_id: comment.id,
+    }, isCommitComment);
+  }
+
+  const comment = `${getCommentPrefix(identifier)}\n${message}`;
+
+  console.log(`Creating a new comment for ${identifier}.`);
+  await createComment({
+    owner,
+    repo,
+    comment,
+  }, context, isCommitComment);
+}
+
+
+// append mode creates a comment when there is no existing comment that match identifier
+// and appends message to a matching comment if found.
+async function appendMode({octokit, owner, repo, context, isCommitComment, identifier, message}) {
+  console.log(`Checking if a comment already exists for ${identifier}.`);
+  const matchingComment = await findMatchingComment({
+    octokit,
+    owner,
+    repo,
+    context,
+    isCommitComment,
+    identifier,
+  });
+
+  const comment = `${matchingComment.body}\n${message}`;
+
+  if (matchingComment) {
+    console.log(`Updating an existing comment for ${identifier}.`);
+    await updateComment({
+      owner,
+      repo,
+      comment_id: matchingComment.id,
+      comment,
+    }, isCommitComment);
+    return;
+  }
+
+  console.log(`Creating a new comment for ${identifier}.`);
+  await createComment({
+    owner,
+    repo,
+    comment,
+  }, context, isCommitComment);
+}
+
 // CONCATENATED MODULE: ./index.js
 
 
@@ -171,12 +208,21 @@ async function normalMode({octokit, owner, repo, number, identifier, message}) {
     }
 
     const number = core.getInput('number');
+    const commitSHA = core.getInput('commit-sha');
     const identifier = core.getInput('id');
     const append = core.getInput('append');
     const recreate = core.getInput('recreate');
     const fail = core.getInput('fail');
     const githubToken = core.getInput('github-token');
     const message = core.getInput('message');
+
+    if ((number && commitSHA) || (!number && !commitSHA)) {
+      core.setFailed('Either set the `number` or the `commit-sha` field.');
+      return;
+    }
+
+    const isCommitComment = !number;
+    const context = isCommitComment ? commitSHA : number;
 
     let mode = normalMode;
 
@@ -191,7 +237,7 @@ async function normalMode({octokit, owner, repo, number, identifier, message}) {
 
     const octokit = github.getOctokit(githubToken);
 
-    await mode({octokit, owner, repo, number, identifier, message});
+    await mode({octokit, owner, repo, context, isCommitComment, identifier, message});
 
     if (fail === 'true') {
       core.setFailed(message);
