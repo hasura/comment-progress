@@ -90,7 +90,7 @@ class commitCommenter {
   }
 }  
 
-export async getCommenter(octokit, {owner, repo, number, commitSHA}) {
+export async function getCommenter(octokit, {owner, repo, number, commitSHA}) {
   if ((number && commitSHA) || (!number && !commitSHA)) {
     throw 'Either set the `number` or the `commit-sha` field.'
   }
