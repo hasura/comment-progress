@@ -32,7 +32,7 @@ class issueCommenter {
       issue_number: this.number,
       page: opts.page,
       per_page: opts.perPage,
-    }
+    });
   }
 
   async updateComment(commentID, comment) {
@@ -77,7 +77,7 @@ class commitCommenter {
       commit_sha: this.commitSHA,
       page: opts.page,
       per_page: opts.perPage,
-    }
+    });
   }
 
   async updateComment(commentID, comment) {
