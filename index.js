@@ -1,7 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { normalMode, recreateMode, appendMode } from './modes';
-import { getCommentMethod } from './comment';
+import { getCommenter } from './comment';
 
 (async () => {
   try {
@@ -20,15 +20,15 @@ import { getCommentMethod } from './comment';
     const githubToken = core.getInput('github-token');
     const message = core.getInput('message');
 
+    const octokit = github.getOctokit(githubToken);
+
     let commenter;
     try {
-      commenter = getCommentMethod(number, commitSHA);
+      commenter = getCommenter(octokit, {owner, repo, number, commitSHA});
     } catch(err) {
-      core.setFailed('Either set the `number` or the `commit-sha` field.');
+      core.setFailed(err);
       return;
     }
-      
-    const context = !number ? commitSHA : number;
 
     let mode = normalMode;
 
@@ -41,9 +41,8 @@ import { getCommentMethod } from './comment';
       mode = appendMode;
     }
 
-    const octokit = github.getOctokit(githubToken);
 
-    await mode(octokit, commenter, owner, repo, context, identifier, message);
+    await mode(commenter, identifier, message);
 
     if (fail === 'true') {
       core.setFailed(message);
