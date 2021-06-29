@@ -2,7 +2,7 @@
 
 [![test](https://github.com/hasura/comment-progress/actions/workflows/test.yml/badge.svg)](https://github.com/hasura/comment-progress/actions/workflows/test.yml)
 
-GitHub Action to notify progress with GitHub Issue/PR comment(s).
+GitHub Action to post comments on GitHub Issues/PR or commits.
 
 Commenting inspired  by GitHub bots like [netlify](https://github.com/apps/netlify), [sonarcloud](https://github.com/apps/sonarcloud) etc.
 
@@ -37,6 +37,9 @@ If the workflow succeeds, the bot comments the details of the preview environmen
     # The pull request or issue number on which the comment should be made 
     number: ${{ github.event.number }}
 
+    # The commit sha on which the comment should be made
+    commit-sha: ${{ github.sha }}
+
     # Friendly identifier denoting the context of the comment
     # This id is hidden on the comment made and used for referring the same comment afterwards.
     id: deploy-progress
@@ -55,6 +58,11 @@ If the workflow succeeds, the bot comments the details of the preview environmen
     # creates a new comment with the given message
     recreate: true
 ```
+
+
+**Note:** The `number` and `commit-sha` fields are mutually exclusive. Only one of them should be set in a job. If both or none are present, an error will be thrown and the job will fail.
+
+**Note**: The `append` and `recreate` fields are also mutually exclusive. If none of them are set, the job will continue in normal mode but if both are present an error will be thrown and the job will fail.
 
 ## Scenarios
 - [Make a simple comment on an issue or pull request](#make-a-simple-comment-on-an-issue-or-pull-request)
