@@ -36,7 +36,7 @@ class IssueCommenter {
     });
   }
 
-  async deleteComment(commentID) {
+  deleteComment(commentID) {
     return this.octokit.issues.deleteComment({
       owner: this.owner,
       repo: this.repo,
@@ -91,7 +91,7 @@ class CommitCommenter {
   }
 
   listComments(opts) {
-    return this.octokit.repos.listCommitComments({
+    return this.octokit.repos.listCommentsForCommit({
       owner: this.owner,
       repo: this.repo,
       commit_sha: this.commitSHA,
