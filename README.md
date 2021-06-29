@@ -2,7 +2,7 @@
 
 [![test](https://github.com/hasura/comment-progress/actions/workflows/test.yml/badge.svg)](https://github.com/hasura/comment-progress/actions/workflows/test.yml)
 
-GitHub Action to post comments on GitHub Issues/PR or commits.
+GitHub Action to notify progress by commenting on GitHub issues, pull requests, and commits.
 
 Commenting inspired  by GitHub bots like [netlify](https://github.com/apps/netlify), [sonarcloud](https://github.com/apps/sonarcloud) etc.
 

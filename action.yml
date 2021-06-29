@@ -1,5 +1,5 @@
 name: 'Comment Progress'
-description: 'Notify progress with GitHub Issue/PR comment(s).'
+description: 'Notify progress by commenting on GitHub issues, pull requests, and commits'
 branding:
   icon: message-square
   color: white
