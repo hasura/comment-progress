@@ -1,5 +1,5 @@
-import { findMatchingComment, findMatchingComments } from './comment';
-import { getCommentPrefix } from './identifier';
+import { findMatchingComment, findMatchingComments } from './comment/commenter';
+import getCommentPrefix from './identifier';
 
 // normal mode creates a comment when there is no existing comment that match identifier
 // and updates the matching comment if found
@@ -25,7 +25,7 @@ export async function recreateMode(commenter, identifier, message) {
   console.log(`Finding matching comments for ${identifier}.`);
   const matchingComments = await findMatchingComments(commenter, identifier);
 
-  for (let comment of matchingComments) {
+  for (const comment of matchingComments) {
     console.log(`Deleting github comment ${comment.id}`);
     await commenter.deleteComment(comment.id);
   }
@@ -34,7 +34,6 @@ export async function recreateMode(commenter, identifier, message) {
   const comment = `${getCommentPrefix(identifier)}\n${message}`;
   await commenter.createComment(comment);
 }
-
 
 // append mode creates a comment when there is no existing comment that match identifier
 // and appends message to a matching comment if found.

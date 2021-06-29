@@ -1,7 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { normalMode, recreateMode, appendMode } from './modes';
-import { getCommenter } from './comment';
+import { getCommenter } from './comment/commenter';
 
 (async () => {
   try {
@@ -24,8 +24,10 @@ import { getCommenter } from './comment';
 
     let commenter;
     try {
-      commenter = getCommenter(octokit, {owner, repo, number, commitSHA});
-    } catch(err) {
+      commenter = getCommenter(octokit, {
+        owner, repo, number, commitSHA,
+      });
+    } catch (err) {
       core.setFailed(err);
       return;
     }
@@ -35,12 +37,13 @@ import { getCommenter } from './comment';
     if (append === 'true' && recreate === 'true') {
       core.setFailed('Not allowed to set both `append` and `recreate` to true.');
       return;
-    } else if (recreate === 'true') {
+    }
+
+    if (recreate === 'true') {
       mode = recreateMode;
     } else if (append === 'true') {
       mode = appendMode;
     }
-
 
     await mode(commenter, identifier, message);
 
