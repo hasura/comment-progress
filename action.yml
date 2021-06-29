@@ -1,5 +1,5 @@
 name: 'Comment Progress'
-description: 'Notify progress with GitHub Issue/PR comment(s).'
+description: 'Notify progress by commenting on GitHub issues, pull requests, and commits'
 branding:
   icon: message-square
   color: white
@@ -12,7 +12,10 @@ inputs:
     required: true
   number:
     description: 'Github issue or pull request number'
-    required: true
+    required: false
+  commit-sha:
+    description: 'Commit SHA'
+    require: false
   id:
     description: 'Unique identifier for the comment'
     required: true

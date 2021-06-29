@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { normalMode, recreateMode, appendMode } from './modes';
+import { getCommenter } from './comment/commenter';
 
 (async () => {
   try {
@@ -11,6 +12,7 @@ import { normalMode, recreateMode, appendMode } from './modes';
     }
 
     const number = core.getInput('number');
+    const commitSHA = core.getInput('commit-sha');
     const identifier = core.getInput('id');
     const append = core.getInput('append');
     const recreate = core.getInput('recreate');
@@ -18,29 +20,32 @@ import { normalMode, recreateMode, appendMode } from './modes';
     const githubToken = core.getInput('github-token');
     const message = core.getInput('message');
 
-    let mode = 'normal';
+    const octokit = github.getOctokit(githubToken);
+
+    let commenter;
+    try {
+      commenter = getCommenter(octokit, {
+        owner, repo, number, commitSHA,
+      });
+    } catch (err) {
+      core.setFailed(err);
+      return;
+    }
+
+    let mode = normalMode;
 
     if (append === 'true' && recreate === 'true') {
       core.setFailed('Not allowed to set both `append` and `recreate` to true.');
       return;
-    } else if (recreate === 'true') {
-      mode = 'recreate';
+    }
+
+    if (recreate === 'true') {
+      mode = recreateMode;
     } else if (append === 'true') {
-      mode = 'append';
+      mode = appendMode;
     }
 
-    const octokit = github.getOctokit(githubToken);
-
-    switch (mode) {
-      case 'normal':
-        await normalMode({octokit, owner, repo, number, identifier, message});
-        break;
-      case 'recreate':
-        await recreateMode({octokit, owner, repo, number, identifier, message});
-        break;
-      case 'append':
-        await appendMode({octokit, owner, repo, number, identifier, message});
-    }
+    await mode(commenter, identifier, message);
 
     if (fail === 'true') {
       core.setFailed(message);
