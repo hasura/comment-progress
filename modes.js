@@ -30,9 +30,8 @@ export async function recreateMode(commenter, identifier, message) {
     await commenter.deleteComment(comment.id);
   }
 
-  const comment = `${getCommentPrefix(identifier)}\n${message}`;
-
   console.log(`Creating a new comment for ${identifier}.`);
+  const comment = `${getCommentPrefix(identifier)}\n${message}`;
   await commenter.createComment(comment);
 }
 
@@ -43,14 +42,14 @@ export async function appendMode(commenter, identifier, message) {
   console.log(`Checking if a comment already exists for ${identifier}.`);
   const matchingComment = await findMatchingComment(commenter, identifier);
 
-  const comment = `${matchingComment.body}\n${message}`;
-
   if (matchingComment) {
     console.log(`Updating an existing comment for ${identifier}.`);
+    const comment = `${matchingComment.body}\n${message}`;
     await commenter.updateComment(matchingComment.id, comment);
     return;
   }
 
   console.log(`Creating a new comment for ${identifier}.`);
+  const comment = `${getCommentPrefix(identifier)}\n${message}`;
   await commenter.createComment(comment);
 }
