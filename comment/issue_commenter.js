@@ -6,8 +6,8 @@ export default class IssueCommenter {
     this.number = number;
   }
 
-  async createComment(comment) {
-    await this.octokit.issues.createComment({
+  createComment(comment) {
+    return this.octokit.issues.createComment({
       owner: this.owner,
       repo: this.repo,
       issue_number: this.number,
@@ -16,15 +16,15 @@ export default class IssueCommenter {
   }
 
   async deleteComment(commentID) {
-    await this.octokit.issues.deleteComment({
+    return this.octokit.issues.deleteComment({
       owner: this.owner,
       repo: this.repo,
       comment_id: commentID,
     });
   }
 
-  async listComments(opts) {
-    await this.octokit.issues.listComments({
+  listComments(opts) {
+    return this.octokit.issues.listComments({
       owner: this.owner,
       repo: this.repo,
       issue_number: this.number,
@@ -33,8 +33,8 @@ export default class IssueCommenter {
     });
   }
 
-  async updateComment(commentID, comment) {
-    await this.octokit.issues.updateComment({
+  updateComment(commentID, comment) {
+    return this.octokit.issues.updateComment({
       owner: this.owner,
       repo: this.repo,
       comment_id: commentID,

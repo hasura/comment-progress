@@ -45,8 +45,6 @@ import { getCommenter } from './comment/commenter';
       mode = appendMode;
     }
 
-    console.log('commenter', commenter);
-
     await mode(commenter, identifier, message);
 
     if (fail === 'true') {

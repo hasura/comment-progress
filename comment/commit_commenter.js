@@ -6,8 +6,8 @@ export default class CommitCommenter {
     this.commitSHA = commitSHA;
   }
 
-  async createComment(comment) {
-    await this.octokit.repos.createCommitComment({
+  createComment(comment) {
+    return this.octokit.repos.createCommitComment({
       owner: this.owner,
       repo: this.repo,
       commit_sha: this.commitSHA,
@@ -15,16 +15,16 @@ export default class CommitCommenter {
     });
   }
 
-  async deleteComment(commentID) {
-    await this.octokit.repos.deleteCommitComment({
+  deleteComment(commentID) {
+    return this.octokit.repos.deleteCommitComment({
       owner: this.owner,
       repo: this.repo,
       comment_id: commentID,
     });
   }
 
-  async listComments(opts) {
-    await this.octokit.repos.listCommitComments({
+  listComments(opts) {
+    return this.octokit.repos.listCommitComments({
       owner: this.owner,
       repo: this.repo,
       commit_sha: this.commitSHA,
@@ -33,8 +33,8 @@ export default class CommitCommenter {
     });
   }
 
-  async updateComment(commentID, comment) {
-    await this.octokit.repos.updateCommitComment({
+  updateComment(commentID, comment) {
+    return this.octokit.repos.updateCommitComment({
       owner: this.owner,
       repo: this.repo,
       comment_id: commentID,
