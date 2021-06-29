@@ -24,7 +24,7 @@ export default class CommitCommenter {
   }
 
   listComments(opts) {
-    return this.octokit.repos.listCommitComments({
+    return this.octokit.repos.listCommentsForCommit({
       owner: this.owner,
       repo: this.repo,
       commit_sha: this.commitSHA,
