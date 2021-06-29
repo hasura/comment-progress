@@ -15,7 +15,7 @@ export default class IssueCommenter {
     });
   }
 
-  async deleteComment(commentID) {
+  deleteComment(commentID) {
     return this.octokit.issues.deleteComment({
       owner: this.owner,
       repo: this.repo,

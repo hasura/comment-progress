@@ -6,11 +6,14 @@ on:
       number:
         description: 'Issue/PR number'
         required: true
+      sha:
+        description: 'Commit SHA'
+        required: true
 
 jobs:
-  normal-mode:
+  issue-normal-mode:
     runs-on: ubuntu-20.04
-    name: Normal mode progress
+    name: Normal mode progress for issue comments
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -36,9 +39,9 @@ jobs:
           id: normal-mode-comment
           message: 'normal mode - update comment'
 
-  append-mode:
+  issue-append-mode:
     runs-on: ubuntu-20.04
-    name: Append mode progress
+    name: Append mode progress for issue comments
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -65,9 +68,9 @@ jobs:
           append: true
           message: 'append mode - appended message to the create comment'
 
-  recreate-mode:
+  issue-recreate-mode:
     runs-on: ubuntu-20.04
-    name: Recreate mode progress
+    name: Recreate mode progress for issue comments
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -94,9 +97,95 @@ jobs:
           recreate: true
           message: 'recreate mode - latest comment (should be posted after deleting the create comment)'
 
-  fail-mode:
+  commit-normal-mode:
     runs-on: ubuntu-20.04
-    name: Fail on invalid modes
+    name: Normal mode progress for commit comments
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: normal mode - create comment
+        uses: hasura/comment-progress@test
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: 'hasura/comment-progress'
+          commit-sha: ${{ github.event.inputs.sha }}
+          id: normal-mode-comment
+          message: 'normal mode - create comment'
+
+      - name: Do some work
+        run: echo "this step just prints this"
+
+      - name: normal mode - update comment
+        uses: hasura/comment-progress@test
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: 'hasura/comment-progress'
+          commit-sha: ${{ github.event.inputs.sha }}
+          id: normal-mode-comment
+          message: 'normal mode - update comment'
+
+  commit-append-mode:
+    runs-on: ubuntu-20.04
+    name: Append mode progress for commit comments
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: append mode - create comment
+        uses: hasura/comment-progress@test
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: 'hasura/comment-progress'
+          commit-sha: ${{ github.event.inputs.sha }}
+          id: append-mode-comment
+          message: 'append mode - create comment'
+
+      - name: Do some work
+        run: echo "this step just prints this"
+
+      - name: append mode - append comment
+        uses: hasura/comment-progress@test
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: 'hasura/comment-progress'
+          commit-sha: ${{ github.event.inputs.sha }}
+          id: append-mode-comment
+          append: true
+          message: 'append mode - appended message to the create comment'
+
+  commit-recreate-mode:
+    runs-on: ubuntu-20.04
+    name: Recreate mode progress for commit comments
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: recreate mode - create comment
+        uses: hasura/comment-progress@test
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: 'hasura/comment-progress'
+          commit-sha: ${{ github.event.inputs.sha }}
+          id: recreate-mode-comment
+          message: 'recreate mode - create comment'
+
+      - name: Do some work
+        run: echo "this step just prints this"
+
+      - name: recreate mode - append comment
+        uses: hasura/comment-progress@test
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: 'hasura/comment-progress'
+          commit-sha: ${{ github.event.inputs.sha }}
+          id: recreate-mode-comment
+          recreate: true
+          message: 'recreate mode - latest comment (should be posted after deleting the create comment)'
+
+  fail-mode-append-recreate:
+    runs-on: ubuntu-20.04
+    name: Fail when both append and recreate given
     continue-on-error: true
     steps:
       - name: Checkout
@@ -112,6 +201,40 @@ jobs:
           recreate: true
           append: true
           message: 'should error out as recreate and append mode could not be used together.'
+
+  fail-mode-issue-commit-both:
+    runs-on: ubuntu-20.04
+    name: Fail when both number and sha given
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Error out
+        uses: hasura/comment-progress@test
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN }}
+          repository: 'hasura/comment-progress'
+          number: ${{ github.event.inputs.number }}
+          commit-sha: ${{ github.event.inputs.sha }}
+          id: fail-mode-issue-commit-both
+          message: 'should error out as both number and sha fields are given'
+
+  fail-mode-issue-commit-none:
+    runs-on: ubuntu-20.04
+    name: Fail when both number and sha not given
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Error out
+        uses: hasura/comment-progress@test
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN }}
+          repository: 'hasura/comment-progress'
+          id: fail-mode-issue-commit-none
+          message: 'should error out as both number and sha fields are not given'
 
   fail-comment:
     runs-on: ubuntu-20.04
@@ -130,3 +253,4 @@ jobs:
           id: fail-comment
           fail: true
           message: ':x: This comment is to denote an error.'
+
