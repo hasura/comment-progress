@@ -1,6 +1,6 @@
 import {getCommentPrefix} from './identifier';
 
-class issueCommenter {
+class IssueCommenter {
   constructor(octokit, {owner, repo, number}) {
     this.octokit = octokit;
     this.owner = owner;
@@ -36,7 +36,7 @@ class issueCommenter {
   }
 
   async updateComment(commentID, comment) {
-    await this.octokit.issues.deleteComment({
+    await this.octokit.issues.updateComment({
       owner: this.owner,
       repo: this.repo,
       comment_id: commentID,
@@ -45,7 +45,7 @@ class issueCommenter {
   }
 }
 
-class commitCommenter {
+class CommitCommenter {
   constructor(octokit, {owner, repo, commitSHA}) {
     this.octokit = octokit;
     this.owner = owner;
@@ -81,7 +81,7 @@ class commitCommenter {
   }
 
   async updateComment(commentID, comment) {
-    await this.octokit.repos.deleteCommitComment({
+    await this.octokit.repos.updateCommitComment({
       owner: this.owner,
       repo: this.repo,
       comment_id: commentID,

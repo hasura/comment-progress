@@ -21,7 +21,7 @@ function getCommentPrefix(identifier) {
 // CONCATENATED MODULE: ./comment.js
 
 
-class issueCommenter {
+class IssueCommenter {
   constructor(octokit, {owner, repo, number}) {
     this.octokit = octokit;
     this.owner = owner;
@@ -57,7 +57,7 @@ class issueCommenter {
   }
 
   async updateComment(commentID, comment) {
-    await this.octokit.issues.deleteComment({
+    await this.octokit.issues.updateComment({
       owner: this.owner,
       repo: this.repo,
       comment_id: commentID,
@@ -66,7 +66,7 @@ class issueCommenter {
   }
 }
 
-class commitCommenter {
+class CommitCommenter {
   constructor(octokit, {owner, repo, commitSHA}) {
     this.octokit = octokit;
     this.owner = owner;
@@ -102,7 +102,7 @@ class commitCommenter {
   }
 
   async updateComment(commentID, comment) {
-    await this.octokit.repos.deleteCommitComment({
+    await this.octokit.repos.updateCommitComment({
       owner: this.owner,
       repo: this.repo,
       comment_id: commentID,
@@ -175,8 +175,8 @@ async function normalMode(commenter, identifier, message) {
   await commenter.createComment(comment);
 }
 
-// recreate mode deletes existing comments that match the idemtifier
-// and create a new comment
+// recreate mode deletes existing comments that match the identifier
+// and creates a new comment
 async function recreateMode(commenter, identifier, message) {
   console.log(`Finding matching comments for ${identifier}.`);
   const matchingComments = await findMatchingComments(commenter, identifier);

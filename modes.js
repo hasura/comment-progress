@@ -19,8 +19,8 @@ export async function normalMode(commenter, identifier, message) {
   await commenter.createComment(comment);
 }
 
-// recreate mode deletes existing comments that match the idemtifier
-// and create a new comment
+// recreate mode deletes existing comments that match the identifier
+// and creates a new comment
 export async function recreateMode(commenter, identifier, message) {
   console.log(`Finding matching comments for ${identifier}.`);
   const matchingComments = await findMatchingComments(commenter, identifier);
