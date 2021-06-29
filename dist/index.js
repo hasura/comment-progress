@@ -115,7 +115,7 @@ class CommitCommenter {
 
 
 
-async function getCommenter(octokit, {
+function getCommenter(octokit, {
   owner, repo, number, commitSHA,
 }) {
   if ((number && commitSHA) || (!number && !commitSHA)) {

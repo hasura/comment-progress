@@ -2,7 +2,7 @@ import getCommentPrefix from '../identifier';
 import IssueCommenter from './issue_commenter';
 import CommitCommenter from './commit_commenter';
 
-export async function getCommenter(octokit, {
+export function getCommenter(octokit, {
   owner, repo, number, commitSHA,
 }) {
   if ((number && commitSHA) || (!number && !commitSHA)) {
