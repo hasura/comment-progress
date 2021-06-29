@@ -2,7 +2,7 @@ module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 794:
+/***/ 752:
 /***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
 
 "use strict";
@@ -18,11 +18,9 @@ function getCommentPrefix(identifier) {
   return `<!-- ${identifier}: do not delete/edit this line -->`;
 }
 
-// CONCATENATED MODULE: ./comment.js
-
-
+// CONCATENATED MODULE: ./comment/issue_commenter.js
 class IssueCommenter {
-  constructor(octokit, {owner, repo, number}) {
+  constructor(octokit, { owner, repo, number }) {
     this.octokit = octokit;
     this.owner = owner;
     this.repo = repo;
@@ -66,8 +64,9 @@ class IssueCommenter {
   }
 }
 
+// CONCATENATED MODULE: ./comment/commit_commenter.js
 class CommitCommenter {
-  constructor(octokit, {owner, repo, commitSHA}) {
+  constructor(octokit, { owner, repo, commitSHA }) {
     this.octokit = octokit;
     this.owner = owner;
     this.repo = repo;
@@ -109,48 +108,57 @@ class CommitCommenter {
       body: comment,
     });
   }
-}  
-
-async function getCommenter(octokit, {owner, repo, number, commitSHA}) {
-  if ((number && commitSHA) || (!number && !commitSHA)) {
-    throw 'Either set the `number` or the `commit-sha` field.'
-  }
-  if(number) {
-    return new issueCommenter(octokit, {owner, repo, number});
-  } else {
-    return new commitCommenter(octokit, {owner, repo, commitSHA});
-  }
 }
 
-async function findMatchingComment(commenter, identifier) {
-  const matchingComments = await findMatchingComments(commenter, identifier);
-  let matchingComment;
-  if (matchingComments && matchingComments.length > 0) {
-    matchingComment = matchingComments[matchingComments.length-1];
+// CONCATENATED MODULE: ./comment/commenter.js
+
+
+
+
+async function getCommenter(octokit, {
+  owner, repo, number, commitSHA,
+}) {
+  if ((number && commitSHA) || (!number && !commitSHA)) {
+    throw new Error('Either set the `number` or the `commit-sha` field.');
   }
-  return matchingComment;
+  if (number) {
+    return new IssueCommenter(octokit, { owner, repo, number });
+  }
+  if (commitSHA) {
+    return new CommitCommenter(octokit, { owner, repo, commitSHA });
+  }
+  return null;
 }
 
 async function findMatchingComments(commenter, identifier) {
   let fetchMoreComments = true;
   let page = 0;
-  let matchingComments = [];
+  const matchingComments = [];
   const commentPrefix = getCommentPrefix(identifier);
 
   while (fetchMoreComments) {
     page += 1;
     const comments = await commenter.listComments({
       page,
-      perPage: 100
+      perPage: 100,
     });
     fetchMoreComments = comments.data.length !== 0;
-    for (let comment of comments.data) {
+    for (const comment of comments.data) {
       if (comment.body.startsWith(commentPrefix)) {
         matchingComments.push(comment);
       }
     }
   }
   return matchingComments;
+}
+
+async function findMatchingComment(commenter, identifier) {
+  const matchingComments = await findMatchingComments(commenter, identifier);
+  let matchingComment;
+  if (matchingComments && matchingComments.length > 0) {
+    matchingComment = matchingComments[matchingComments.length - 1];
+  }
+  return matchingComment;
 }
 
 // CONCATENATED MODULE: ./modes.js
@@ -181,7 +189,7 @@ async function recreateMode(commenter, identifier, message) {
   console.log(`Finding matching comments for ${identifier}.`);
   const matchingComments = await findMatchingComments(commenter, identifier);
 
-  for (let comment of matchingComments) {
+  for (const comment of matchingComments) {
     console.log(`Deleting github comment ${comment.id}`);
     await commenter.deleteComment(comment.id);
   }
@@ -190,7 +198,6 @@ async function recreateMode(commenter, identifier, message) {
   const comment = `${getCommentPrefix(identifier)}\n${message}`;
   await commenter.createComment(comment);
 }
-
 
 // append mode creates a comment when there is no existing comment that match identifier
 // and appends message to a matching comment if found.
@@ -237,8 +244,10 @@ async function appendMode(commenter, identifier, message) {
 
     let commenter;
     try {
-      commenter = getCommenter(octokit, {owner, repo, number, commitSHA});
-    } catch(err) {
+      commenter = getCommenter(octokit, {
+        owner, repo, number, commitSHA,
+      });
+    } catch (err) {
       core.setFailed(err);
       return;
     }
@@ -248,12 +257,13 @@ async function appendMode(commenter, identifier, message) {
     if (append === 'true' && recreate === 'true') {
       core.setFailed('Not allowed to set both `append` and `recreate` to true.');
       return;
-    } else if (recreate === 'true') {
+    }
+
+    if (recreate === 'true') {
       mode = recreateMode;
     } else if (append === 'true') {
       mode = appendMode;
     }
-
 
     await mode(commenter, identifier, message);
 
@@ -6211,6 +6221,6 @@ module.exports = require("zlib");;
 /******/ 	// module exports must be returned from runtime so entry inlining is disabled
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
-/******/ 	return __nccwpck_require__(794);
+/******/ 	return __nccwpck_require__(752);
 /******/ })()
 ;
