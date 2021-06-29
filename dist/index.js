@@ -27,8 +27,8 @@ class IssueCommenter {
     this.number = number;
   }
 
-  async createComment(comment) {
-    await this.octokit.issues.createComment({
+  createComment(comment) {
+    return this.octokit.issues.createComment({
       owner: this.owner,
       repo: this.repo,
       issue_number: this.number,
@@ -37,15 +37,15 @@ class IssueCommenter {
   }
 
   async deleteComment(commentID) {
-    await this.octokit.issues.deleteComment({
+    return this.octokit.issues.deleteComment({
       owner: this.owner,
       repo: this.repo,
       comment_id: commentID,
     });
   }
 
-  async listComments(opts) {
-    await this.octokit.issues.listComments({
+  listComments(opts) {
+    return this.octokit.issues.listComments({
       owner: this.owner,
       repo: this.repo,
       issue_number: this.number,
@@ -54,8 +54,8 @@ class IssueCommenter {
     });
   }
 
-  async updateComment(commentID, comment) {
-    await this.octokit.issues.updateComment({
+  updateComment(commentID, comment) {
+    return this.octokit.issues.updateComment({
       owner: this.owner,
       repo: this.repo,
       comment_id: commentID,
@@ -73,8 +73,8 @@ class CommitCommenter {
     this.commitSHA = commitSHA;
   }
 
-  async createComment(comment) {
-    await this.octokit.repos.createCommitComment({
+  createComment(comment) {
+    return this.octokit.repos.createCommitComment({
       owner: this.owner,
       repo: this.repo,
       commit_sha: this.commitSHA,
@@ -82,16 +82,16 @@ class CommitCommenter {
     });
   }
 
-  async deleteComment(commentID) {
-    await this.octokit.repos.deleteCommitComment({
+  deleteComment(commentID) {
+    return this.octokit.repos.deleteCommitComment({
       owner: this.owner,
       repo: this.repo,
       comment_id: commentID,
     });
   }
 
-  async listComments(opts) {
-    await this.octokit.repos.listCommitComments({
+  listComments(opts) {
+    return this.octokit.repos.listCommitComments({
       owner: this.owner,
       repo: this.repo,
       commit_sha: this.commitSHA,
@@ -100,8 +100,8 @@ class CommitCommenter {
     });
   }
 
-  async updateComment(commentID, comment) {
-    await this.octokit.repos.updateCommitComment({
+  updateComment(commentID, comment) {
+    return this.octokit.repos.updateCommitComment({
       owner: this.owner,
       repo: this.repo,
       comment_id: commentID,
@@ -264,8 +264,6 @@ async function appendMode(commenter, identifier, message) {
     } else if (append === 'true') {
       mode = appendMode;
     }
-
-    console.log('commenter', commenter);
 
     await mode(commenter, identifier, message);
 
