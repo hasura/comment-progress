@@ -11,12 +11,14 @@ export async function normalMode(commenter, identifier, message) {
 
   if (matchingComment) {
     console.log(`Updating an existing comment for ${identifier}.`);
-    await commenter.updateComment(matchingComment.id, comment);
+    const resp = await commenter.updateComment(matchingComment.id, comment);
+    console.log(`Updated comment: ${resp.data.html_url}`);
     return;
   }
 
   console.log(`Creating a new comment for ${identifier}.`);
-  await commenter.createComment(comment);
+  const resp = await commenter.createComment(comment);
+  console.log(`Created comment: ${resp.data.html_url}`);
 }
 
 // recreate mode deletes existing comments that match the identifier
@@ -32,7 +34,8 @@ export async function recreateMode(commenter, identifier, message) {
 
   console.log(`Creating a new comment for ${identifier}.`);
   const comment = `${getCommentPrefix(identifier)}\n${message}`;
-  await commenter.createComment(comment);
+  const resp = await commenter.createComment(comment);
+  console.log(`Created comment: ${resp.data.html_url}`);
 }
 
 // append mode creates a comment when there is no existing comment that match identifier
@@ -44,11 +47,13 @@ export async function appendMode(commenter, identifier, message) {
   if (matchingComment) {
     console.log(`Updating an existing comment for ${identifier}.`);
     const comment = `${matchingComment.body}\n${message}`;
-    await commenter.updateComment(matchingComment.id, comment);
+    const resp = await commenter.updateComment(matchingComment.id, comment);
+    console.log(`Updated comment: ${resp.data.html_url}`);
     return;
   }
 
   console.log(`Creating a new comment for ${identifier}.`);
   const comment = `${getCommentPrefix(identifier)}\n${message}`;
-  await commenter.createComment(comment);
+  const resp = await commenter.createComment(comment);
+  console.log(`Created comment: ${resp.data.html_url}`);
 }
