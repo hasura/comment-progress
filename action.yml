@@ -25,7 +25,7 @@ inputs:
   fail:
     description: 'If true, the step will be marked as failure'
   append:
-    description: 'If true, message will be append to existing comment'
+    description: 'If true, message will be appended to existing comment'
     required: false
     default: false
   recreate:
