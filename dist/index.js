@@ -15,7 +15,7 @@ var core = __nccwpck_require__(186);
 var github = __nccwpck_require__(438);
 // CONCATENATED MODULE: ./identifier.js
 function getCommentPrefix(identifier) {
-  return `<!-- ${identifier}: do not delete/edit this line, dude -->`;
+  return `<!-- ${identifier}: do not delete/edit this line -->`;
 }
 
 // CONCATENATED MODULE: ./comment/issue_commenter.js
