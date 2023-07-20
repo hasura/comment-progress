@@ -15,7 +15,7 @@ var core = __nccwpck_require__(186);
 var github = __nccwpck_require__(438);
 // CONCATENATED MODULE: ./identifier.js
 function getCommentPrefix(identifier) {
-  return `<!-- ${identifier}: do not delete/edit this line -->`;
+  return `<!-- ${identifier}: do not delete/edit this line, dude -->`;
 }
 
 // CONCATENATED MODULE: ./comment/issue_commenter.js
@@ -222,6 +222,17 @@ async function appendMode(commenter, identifier, message) {
   console.log(`Created comment: ${resp.data.html_url}`);
 }
 
+// delete mode deletes an existing comment that matches the identifier
+async function deleteMode(commenter, identifier) {
+  console.log(`Finding matching comment for ${identifier}.`);
+  const matchingComment = await findMatchingComment(commenter, identifier);
+
+  if (matchingComment) {
+    console.log(`Deleting github comment ${matchingComment.id}`);
+    await commenter.deleteComment(matchingComment.id);
+  }
+}
+
 // CONCATENATED MODULE: ./index.js
 
 
@@ -230,27 +241,31 @@ async function appendMode(commenter, identifier, message) {
 
 (async () => {
   try {
-    const repository = core.getInput('repository');
-    const [owner, repo] = repository.split('/');
+    const repository = core.getInput("repository");
+    const [owner, repo] = repository.split("/");
     if (!owner || !repo) {
       throw new Error(`Invalid repository: ${repository}`);
     }
 
-    const number = core.getInput('number');
-    const commitSHA = core.getInput('commit-sha');
-    const identifier = core.getInput('id');
-    const append = core.getInput('append');
-    const recreate = core.getInput('recreate');
-    const fail = core.getInput('fail');
-    const githubToken = core.getInput('github-token');
-    const message = core.getInput('message');
+    const number = core.getInput("number");
+    const commitSHA = core.getInput("commit-sha");
+    const identifier = core.getInput("id");
+    const appendComment = core.getInput("append");
+    const recreateComment = core.getInput("recreate");
+    const deleteComment = core.getInput("delete");
+    const fail = core.getInput("fail");
+    const githubToken = core.getInput("github-token");
+    const message = core.getInput("message");
 
     const octokit = github.getOctokit(githubToken);
 
     let commenter;
     try {
       commenter = getCommenter(octokit, {
-        owner, repo, number, commitSHA,
+        owner,
+        repo,
+        number,
+        commitSHA,
       });
     } catch (err) {
       core.setFailed(err);
@@ -259,20 +274,27 @@ async function appendMode(commenter, identifier, message) {
 
     let mode = normalMode;
 
-    if (append === 'true' && recreate === 'true') {
-      core.setFailed('Not allowed to set both `append` and `recreate` to true.');
+    if (appendComment === "true" && recreateComment === "true") {
+      core.setFailed("Not allowed to set both `append` and `recreate` to true.");
       return;
     }
 
-    if (recreate === 'true') {
+    if (deleteComment === "true" && (appendComment === "true" || recreateComment === "true")) {
+      core.setFailed("Not allowed to set `delete` to true with `append` or `recreate`.");
+      return;
+    }
+
+    if (recreateComment === "true") {
       mode = recreateMode;
-    } else if (append === 'true') {
+    } else if (appendComment === "true") {
       mode = appendMode;
+    } else if (deleteComment === "true") {
+      mode = deleteMode;
     }
 
     await mode(commenter, identifier, message);
 
-    if (fail === 'true') {
+    if (fail === "true") {
       core.setFailed(message);
     }
   } catch (error) {
