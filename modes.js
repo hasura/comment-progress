@@ -1,5 +1,5 @@
-import { findMatchingComment, findMatchingComments } from "./comment/commenter";
-import getCommentPrefix from "./identifier";
+import { findMatchingComment, findMatchingComments } from './comment/commenter';
+import getCommentPrefix from './identifier';
 
 // normal mode creates a comment when there is no existing comment that match identifier
 // and updates the matching comment if found
