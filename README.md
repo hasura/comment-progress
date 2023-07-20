@@ -57,6 +57,9 @@ If the workflow succeeds, the bot comments the details of the preview environmen
     # Deletes all the existing comments matching the given id and
     # creates a new comment with the given message
     recreate: true
+
+    # Deletes all the existing comments matching the given id
+    delete: true
 ```
 
 
@@ -69,6 +72,7 @@ If the workflow succeeds, the bot comments the details of the preview environmen
 - [Make a simple comment on a commit](#make-a-simple-comment-on-a-commit)
 - [Make a comment and append updates to the same comment](#make-a-comment-and-append-updates-to-the-same-comment)
 - [Delete older/stale comment and add a new comment](#delete-olderstale-comment-and-add-a-new-comment)
+- [Delete a comment which is no longer relevant](#delete-a-comment-which-is-no-longer-relevant)
 
 ### Make a simple comment on an issue or pull request
 
@@ -200,6 +204,22 @@ jobs:
           id: deploy-preview
           message: 'Deployment of a preview for this pull request was successful.'
           recreate: true 
+```
+
+## Delete a comment which is no longer relevant
+
+Take a case where you need to delete a comment which is no longer relevant. E.g., we use this to write redirects for our Docs' site. If a contributor were to revert a filename change or a file deletion, we'd need to invalidate the comment. The `delete` flag will help in achieving this scenario.
+
+```yml
+- name: Delete comment if no redirects needed
+  if: steps.check-renamed.outputs.diff-status == 'false'
+  uses: hasura/comment-progress@v2.1.0
+  with:
+    github-token: ${{ secrets.GITHUB_TOKEN }}
+    repository: 'my-org/my-repo'
+    number: ${{ github.event.number }}
+    id: redirects-summary
+    delete: true
 ```
 
 ## Contributing
