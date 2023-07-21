@@ -57,3 +57,14 @@ export async function appendMode(commenter, identifier, message) {
   const resp = await commenter.createComment(comment);
   console.log(`Created comment: ${resp.data.html_url}`);
 }
+
+// delete mode deletes an existing comment that matches the identifier
+export async function deleteMode(commenter, identifier) {
+  console.log(`Finding matching comment for ${identifier}.`);
+  const matchingComment = await findMatchingComment(commenter, identifier);
+
+  if (matchingComment) {
+    console.log(`Deleting github comment ${matchingComment.id}`);
+    await commenter.deleteComment(matchingComment.id);
+  }
+}

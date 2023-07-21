@@ -24,7 +24,7 @@ If the workflow succeeds, the bot comments the details of the preview environmen
 
 ## Usage
 ```yml
-- uses: hasura/comment-progress@v2.1.0
+- uses: hasura/comment-progress@v2.2.0
   with:
     # The GitHub token to be used when creating/updating comments
     # ${{ secrets.GITHUB_TOKEN }} is provided by default by GitHub actions
@@ -57,6 +57,9 @@ If the workflow succeeds, the bot comments the details of the preview environmen
     # Deletes all the existing comments matching the given id and
     # creates a new comment with the given message
     recreate: true
+
+    # Deletes all the existing comments matching the given id
+    delete: true
 ```
 
 
@@ -69,6 +72,7 @@ If the workflow succeeds, the bot comments the details of the preview environmen
 - [Make a simple comment on a commit](#make-a-simple-comment-on-a-commit)
 - [Make a comment and append updates to the same comment](#make-a-comment-and-append-updates-to-the-same-comment)
 - [Delete older/stale comment and add a new comment](#delete-olderstale-comment-and-add-a-new-comment)
+- [Delete a comment which is no longer relevant](#delete-a-comment-which-is-no-longer-relevant)
 
 ### Make a simple comment on an issue or pull request
 
@@ -85,7 +89,7 @@ jobs:
     name: Say thanks for the PR
     steps:
       - name: comment on the pull request
-        uses: hasura/comment-progress@v2.1.0
+        uses: hasura/comment-progress@v2.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'my-org/my-repo'
@@ -111,7 +115,7 @@ jobs:
     name: Comment on commit with some info
     steps:
       - name: Comment on commit
-        uses: hasura/comment-progress@v2.1.0
+        uses: hasura/comment-progress@v2.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'my-org/my-repo'
@@ -136,7 +140,7 @@ jobs:
     name: Deploy preview
     steps:
       - name: Notify about starting this deployment 
-        uses: hasura/comment-progress@v2.1.0
+        uses: hasura/comment-progress@v2.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'my-org/my-repo'
@@ -150,7 +154,7 @@ jobs:
           # long running step
 
       - name: Notify about the result of this deployment 
-        uses: hasura/comment-progress@v2.1.0
+        uses: hasura/comment-progress@v2.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'my-org/my-repo'
@@ -178,7 +182,7 @@ jobs:
     name: Deploy preview
     steps:
       - name: Notify about starting this deployment 
-        uses: hasura/comment-progress@v2.1.0
+        uses: hasura/comment-progress@v2.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'my-org/my-repo'
@@ -192,7 +196,7 @@ jobs:
           # long running step
 
       - name: Notify about the result of this deployment 
-        uses: hasura/comment-progress@v2.1.0
+        uses: hasura/comment-progress@v2.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'my-org/my-repo'
@@ -200,6 +204,29 @@ jobs:
           id: deploy-preview
           message: 'Deployment of a preview for this pull request was successful.'
           recreate: true 
+```
+
+## Delete a comment which is no longer relevant
+
+Take a case where you need to delete a comment which is no longer relevant. E.g., let's say we previously added a comment in a PR with `id: preview-url` to post a link where the changes of the pull request could be previewed. It might be useful to delete such a comment when the PR is closed to avoid users from accessing stale preview links. We can use the `delete` flag to achieve this.
+
+```yml
+on:
+  pull_request:
+    types: [closed]
+    
+jobs:
+  cleanup-automated-comments:
+    runs-on: ubuntu-20.04
+    name: Delete automated PR comments
+    steps:
+      - name: delete comment that contains a preview link
+        uses: hasura/comment-progress@v2.2.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: 'my-org/my-repo'
+          number: ${{ github.event.number }}
+          id: preview-url
 ```
 
 ## Contributing
