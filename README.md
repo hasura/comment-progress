@@ -24,7 +24,7 @@ If the workflow succeeds, the bot comments the details of the preview environmen
 
 ## Usage
 ```yml
-- uses: hasura/comment-progress@v2.1.0
+- uses: hasura/comment-progress@v2.2.0
   with:
     # The GitHub token to be used when creating/updating comments
     # ${{ secrets.GITHUB_TOKEN }} is provided by default by GitHub actions
@@ -89,7 +89,7 @@ jobs:
     name: Say thanks for the PR
     steps:
       - name: comment on the pull request
-        uses: hasura/comment-progress@v2.1.0
+        uses: hasura/comment-progress@v2.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'my-org/my-repo'
@@ -115,7 +115,7 @@ jobs:
     name: Comment on commit with some info
     steps:
       - name: Comment on commit
-        uses: hasura/comment-progress@v2.1.0
+        uses: hasura/comment-progress@v2.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'my-org/my-repo'
@@ -140,7 +140,7 @@ jobs:
     name: Deploy preview
     steps:
       - name: Notify about starting this deployment 
-        uses: hasura/comment-progress@v2.1.0
+        uses: hasura/comment-progress@v2.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'my-org/my-repo'
@@ -154,7 +154,7 @@ jobs:
           # long running step
 
       - name: Notify about the result of this deployment 
-        uses: hasura/comment-progress@v2.1.0
+        uses: hasura/comment-progress@v2.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'my-org/my-repo'
@@ -182,7 +182,7 @@ jobs:
     name: Deploy preview
     steps:
       - name: Notify about starting this deployment 
-        uses: hasura/comment-progress@v2.1.0
+        uses: hasura/comment-progress@v2.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'my-org/my-repo'
@@ -196,7 +196,7 @@ jobs:
           # long running step
 
       - name: Notify about the result of this deployment 
-        uses: hasura/comment-progress@v2.1.0
+        uses: hasura/comment-progress@v2.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: 'my-org/my-repo'
@@ -208,18 +208,25 @@ jobs:
 
 ## Delete a comment which is no longer relevant
 
-Take a case where you need to delete a comment which is no longer relevant. E.g., we use this to write redirects for our Docs' site. If a contributor were to revert a filename change or a file deletion, we'd need to invalidate the comment. The `delete` flag will help in achieving this scenario.
+Take a case where you need to delete a comment which is no longer relevant. E.g., let's say we previously added a comment in a PR with `id: preview-url` to post a link where the changes of the pull request could be previewed. It might be useful to delete such a comment when the PR is closed to avoid users from accessing stale preview links. We can use the `delete` flag to achieve this.
 
 ```yml
-- name: Delete comment if no redirects needed
-  if: steps.check-renamed.outputs.diff-status == 'false'
-  uses: hasura/comment-progress@v2.1.0
-  with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
-    repository: 'my-org/my-repo'
-    number: ${{ github.event.number }}
-    id: redirects-summary
-    delete: true
+on:
+  pull_request:
+    types: [closed]
+    
+jobs:
+  cleanup-automated-comments:
+    runs-on: ubuntu-20.04
+    name: Delete automated PR comments
+    steps:
+      - name: delete comment that contains a preview link
+        uses: hasura/comment-progress@v2.2.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: 'my-org/my-repo'
+          number: ${{ github.event.number }}
+          id: preview-url
 ```
 
 ## Contributing
