@@ -1,41 +1,44 @@
-name: 'Comment Progress'
-description: 'Notify progress by commenting on GitHub issues, pull requests, and commits'
+name: "Comment Progress"
+description: "Notify progress by commenting on GitHub issues, pull requests, and commits"
 branding:
   icon: message-square
   color: white
 inputs:
   github-token:
-    description: 'Github token'
+    description: "Github token"
     required: true
   repository:
-    description: 'Github repository'
+    description: "Github repository"
     required: true
   number:
-    description: 'Github issue or pull request number'
+    description: "Github issue or pull request number"
     required: false
   commit-sha:
-    description: 'Commit SHA'
+    description: "Commit SHA"
     require: false
   id:
-    description: 'Unique identifier for the comment'
+    description: "Unique identifier for the comment"
     required: true
   message:
-    description: 'Message to be commented'
-    required: true
+    description: "Message to be commented"
+    required: false
+  message-path:
+    description: "Read message from path"
+    required: false
   fail:
-    description: 'If true, the step will be marked as failure'
+    description: "If true, the step will be marked as failure"
   append:
-    description: 'If true, message will be appended to existing comment'
+    description: "If true, message will be appended to existing comment"
     required: false
     default: false
   recreate:
-    description: 'If true, message will be commented after deleting existing comment'
+    description: "If true, message will be commented after deleting existing comment"
     required: false
     default: false
   delete:
-    description: 'If true, the comment will be deleted'
+    description: "If true, the comment will be deleted"
     required: false
     default: false
 runs:
-  using: 'node12'
-  main: 'dist/index.js'
+  using: "node12"
+  main: "dist/index.js"
