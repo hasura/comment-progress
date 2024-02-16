@@ -1,7 +1,8 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { normalMode, recreateMode, appendMode, deleteMode } from './modes';
+import { existsSync, readFileSync } from 'fs';
 import { getCommenter } from './comment/commenter';
+import { appendMode, deleteMode, normalMode, recreateMode } from './modes';
 
 (async () => {
   try {
@@ -19,9 +20,21 @@ import { getCommenter } from './comment/commenter';
     const deleteComment = core.getInput('delete');
     const fail = core.getInput('fail');
     const githubToken = core.getInput('github-token');
-    const message = core.getInput('message');
+    let message = core.getInput('message');
+    const messagePath = core.getInput('message-path');
 
     const octokit = github.getOctokit(githubToken);
+
+    if (messagePath && message) {
+      core.setFailed("Only one of 'message' or 'message-path' can be set.");
+      return;
+    } else if (messagePath && !existsSync(messagePath)) {
+      core.setFailed(`Input message-path: '${messagePath}' does not exist.`);
+      return;
+    } else if (messagePath) {
+      console.log(`Read from message-path: ${messagePath} `);
+      message = readFileSync(messagePath, 'utf-8');
+    }
 
     let commenter;
     try {

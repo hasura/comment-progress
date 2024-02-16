@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "ncc build index.js --license licenses.txt",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider ncc build index.js --license licenses.txt",
     "lint": "eslint **/*.js"
   },
   "keywords": [

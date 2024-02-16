@@ -19,10 +19,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: normal mode - create comment
-        uses: hasura/comment-progress@test
+        uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: 'hasura/comment-progress'
+          repository: ${{ github.repository }}
           number: ${{ github.event.inputs.number }}
           id: normal-mode-comment
           message: 'normal mode - create comment'
@@ -31,13 +31,52 @@ jobs:
         run: echo "this step just prints this"
 
       - name: normal mode - update comment
-        uses: hasura/comment-progress@test
+        uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: 'hasura/comment-progress'
+          repository: ${{ github.repository }}
           number: ${{ github.event.inputs.number }}
           id: normal-mode-comment
           message: 'normal mode - update comment'
+
+  message-path:
+    runs-on: ubuntu-20.04
+    name: Use message-path to load message from file
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Create MESSAGE.md
+        run: echo "body from message-path" > MESSAGE.md
+      - name: message path - create comment
+        uses: ./
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          number: ${{ github.event.inputs.number }}
+          id: message-path-comment
+          message-path: ./MESSAGE.md
+
+      - name: message path - missing input
+        uses: ./
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          number: ${{ github.event.inputs.number }}
+          id: message-path-comment
+          message-path: ./MISSING_INPUT.md
+
+      - name: message path - both inputs provided, should fail
+        uses: ./
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          number: ${{ github.event.inputs.number }}
+          id: message-path-comment
+          message-path: ./MISSING_INPUT.md
+          message: BOTH
 
   issue-append-mode:
     runs-on: ubuntu-20.04
@@ -47,22 +86,22 @@ jobs:
         uses: actions/checkout@v2
 
       - name: append mode - create comment
-        uses: hasura/comment-progress@test
+        uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: 'hasura/comment-progress'
+          repository: ${{ github.repository }}
           number: ${{ github.event.inputs.number }}
           id: append-mode-comment
-          message: 'append mode - create comment'
+          message: "append mode - create comment"
 
       - name: Do some work
         run: echo "this step just prints this"
 
       - name: append mode - append comment
-        uses: hasura/comment-progress@test
+        uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: 'hasura/comment-progress'
+          repository: ${{ github.repository }}
           number: ${{ github.event.inputs.number }}
           id: append-mode-comment
           append: true
@@ -76,10 +115,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: recreate mode - create comment
-        uses: hasura/comment-progress@test
+        uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: 'hasura/comment-progress'
+          repository: ${{ github.repository }}
           number: ${{ github.event.inputs.number }}
           id: recreate-mode-comment
           message: 'recreate mode - create comment'
@@ -88,10 +127,10 @@ jobs:
         run: echo "this step just prints this"
 
       - name: recreate mode - append comment
-        uses: hasura/comment-progress@test
+        uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: 'hasura/comment-progress'
+          repository: ${{ github.repository }}
           number: ${{ github.event.inputs.number }}
           id: recreate-mode-comment
           recreate: true
@@ -105,22 +144,22 @@ jobs:
         uses: actions/checkout@v2
 
       - name: normal mode - create comment
-        uses: hasura/comment-progress@test
+        uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: 'hasura/comment-progress'
+          repository: ${{ github.repository }}
           commit-sha: ${{ github.event.inputs.sha }}
           id: normal-mode-comment
-          message: 'normal mode - create comment'
+          message: "normal mode - create comment"
 
       - name: Do some work
         run: echo "this step just prints this"
 
       - name: normal mode - update comment
-        uses: hasura/comment-progress@test
+        uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: 'hasura/comment-progress'
+          repository: ${{ github.repository }}
           commit-sha: ${{ github.event.inputs.sha }}
           id: normal-mode-comment
           message: 'normal mode - update comment'
@@ -133,10 +172,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: append mode - create comment
-        uses: hasura/comment-progress@test
+        uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: 'hasura/comment-progress'
+          repository: ${{ github.repository }}
           commit-sha: ${{ github.event.inputs.sha }}
           id: append-mode-comment
           message: 'append mode - create comment'
@@ -145,10 +184,10 @@ jobs:
         run: echo "this step just prints this"
 
       - name: append mode - append comment
-        uses: hasura/comment-progress@test
+        uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: 'hasura/comment-progress'
+          repository: ${{ github.repository }}
           commit-sha: ${{ github.event.inputs.sha }}
           id: append-mode-comment
           append: true
@@ -162,10 +201,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: recreate mode - create comment
-        uses: hasura/comment-progress@test
+        uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: 'hasura/comment-progress'
+          repository: ${{ github.repository }}
           commit-sha: ${{ github.event.inputs.sha }}
           id: recreate-mode-comment
           message: 'recreate mode - create comment'
@@ -174,10 +213,10 @@ jobs:
         run: echo "this step just prints this"
 
       - name: recreate mode - append comment
-        uses: hasura/comment-progress@test
+        uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: 'hasura/comment-progress'
+          repository: ${{ github.repository }}
           commit-sha: ${{ github.event.inputs.sha }}
           id: recreate-mode-comment
           recreate: true
@@ -192,10 +231,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Should error out and not comment anything
-        uses: hasura/comment-progress@test
+        uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: 'hasura/comment-progress'
+          repository: ${{ github.repository }}
           number: ${{ github.event.inputs.number }}
           id: fail-mode-comment
           recreate: true
@@ -211,10 +250,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Error out
-        uses: hasura/comment-progress@test
+        uses: ./
         with:
           github-token: ${{secrets.GITHUB_TOKEN }}
-          repository: 'hasura/comment-progress'
+          repository: ${{ github.repository }}
           number: ${{ github.event.inputs.number }}
           commit-sha: ${{ github.event.inputs.sha }}
           id: fail-mode-issue-commit-both
@@ -229,10 +268,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Error out
-        uses: hasura/comment-progress@test
+        uses: ./
         with:
           github-token: ${{secrets.GITHUB_TOKEN }}
-          repository: 'hasura/comment-progress'
+          repository: ${{ github.repository }}
           id: fail-mode-issue-commit-none
           message: 'should error out as both number and sha fields are not given'
 
@@ -245,10 +284,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Should comment and fail this job
-        uses: hasura/comment-progress@test
+        uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: 'hasura/comment-progress'
+          repository: ${{ github.repository }}
           number: ${{ github.event.inputs.number }}
           id: fail-comment
           fail: true
