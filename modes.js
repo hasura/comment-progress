@@ -58,6 +58,26 @@ export async function appendMode(commenter, identifier, message) {
   console.log(`Created comment: ${resp.data.html_url}`);
 }
 
+// replace mode replaces the content of an existing comment that matches the identifier
+// with the message.
+export async function replaceMode(commenter, identifier, message) {
+  console.log(`Checking if a comment already exists for ${identifier}.`);
+  const matchingComment = await findMatchingComment(commenter, identifier);
+
+  const comment = `${getCommentPrefix(identifier)}\n${message}`;
+
+  if (matchingComment) {
+    console.log(`Updating an existing comment for ${identifier}.`);
+    const resp = await commenter.updateComment(matchingComment.id, comment);
+    console.log(`Updated comment: ${resp.data.html_url}`);
+    return;
+  }
+
+  console.log(`Creating a new comment for ${identifier}.`);
+  const resp = await commenter.createComment(comment);
+  console.log(`Created comment: ${resp.data.html_url}`);
+}
+
 // delete mode deletes an existing comment that matches the identifier
 export async function deleteMode(commenter, identifier) {
   console.log(`Finding matching comment for ${identifier}.`);

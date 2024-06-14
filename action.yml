@@ -28,6 +28,10 @@ inputs:
     description: 'If true, message will be appended to existing comment'
     required: false
     default: false
+  replace:
+    description: 'If true, message will replace existing comment'
+    required: false
+    default: false
   recreate:
     description: 'If true, message will be commented after deleting existing comment'
     required: false

@@ -55,6 +55,10 @@ If the workflow succeeds, the bot comments the details of the preview environmen
     # If a comment with the given id is not found, a new comment is created
     append: true
 
+    # Replaces the message of a comment that already exits with the given id.
+    # If a comment with the given id is not found, a new comment is created
+    replace: true
+
     # Deletes all the existing comments matching the given id and
     # creates a new comment with the given message
     recreate: true
@@ -63,9 +67,7 @@ If the workflow succeeds, the bot comments the details of the preview environmen
     delete: true
 ```
 
-**Note:** The `number` and `commit-sha` fields are mutually exclusive. Only one of them should be set in a job. If both or none are present, an error will be thrown and the job will fail.
-
-**Note**: The `append` and `recreate` fields are also mutually exclusive. If none of them are set, the job will continue in normal mode but if both are present an error will be thrown and the job will fail.
+**Note**: `append`, `recreate`, `replace`, and `delete` fields are mutually exclusive. If more than one of them are set, an error will be thrown and the job will fail.
 
 ## Scenarios
 
@@ -163,6 +165,45 @@ jobs:
           id: deploy-preview
           message: "Deployment of a preview for this pull request was successful."
           append: true
+```
+
+### Create a comment and replace an identical comment
+
+This uses the `replace` flag to replace any existing comment created with the same id.
+
+```yml
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-20.04
+    name: Deploy preview
+    steps:
+      - name: Notify about starting this deployment
+        uses: hasura/comment-progress@v2.3.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: "my-org/my-repo"
+          number: ${{ github.event.number }}
+          id: deploy-preview
+          message: "Starting deployment of this pull request."
+
+      - name: Deploy preview
+        run: |
+          echo "deploy preview"
+          # long running step
+
+      - name: Notify about the result of this deployment
+        uses: hasura/comment-progress@v2.3.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: "my-org/my-repo"
+          number: ${{ github.event.number }}
+          id: deploy-preview
+          message: "Deployment of a preview for this pull request was successful."
+          replace: true
 ```
 
 ### Delete older/stale comment and add a new comment

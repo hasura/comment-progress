@@ -1,310 +1,5 @@
-module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
-
-/***/ 752:
-/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
-
-"use strict";
-// ESM COMPAT FLAG
-__nccwpck_require__.r(__webpack_exports__);
-
-// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
-var core = __nccwpck_require__(186);
-// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
-var github = __nccwpck_require__(438);
-// CONCATENATED MODULE: ./identifier.js
-function getCommentPrefix(identifier) {
-  return `<!-- ${identifier}: do not delete/edit this line -->`;
-}
-
-// CONCATENATED MODULE: ./comment/issue_commenter.js
-class IssueCommenter {
-  constructor(octokit, { owner, repo, number }) {
-    this.octokit = octokit;
-    this.owner = owner;
-    this.repo = repo;
-    this.number = number;
-  }
-
-  createComment(comment) {
-    return this.octokit.issues.createComment({
-      owner: this.owner,
-      repo: this.repo,
-      issue_number: this.number,
-      body: comment,
-    });
-  }
-
-  deleteComment(commentID) {
-    return this.octokit.issues.deleteComment({
-      owner: this.owner,
-      repo: this.repo,
-      comment_id: commentID,
-    });
-  }
-
-  listComments(opts) {
-    return this.octokit.issues.listComments({
-      owner: this.owner,
-      repo: this.repo,
-      issue_number: this.number,
-      page: opts.page,
-      per_page: opts.perPage,
-    });
-  }
-
-  updateComment(commentID, comment) {
-    return this.octokit.issues.updateComment({
-      owner: this.owner,
-      repo: this.repo,
-      comment_id: commentID,
-      body: comment,
-    });
-  }
-}
-
-// CONCATENATED MODULE: ./comment/commit_commenter.js
-class CommitCommenter {
-  constructor(octokit, { owner, repo, commitSHA }) {
-    this.octokit = octokit;
-    this.owner = owner;
-    this.repo = repo;
-    this.commitSHA = commitSHA;
-  }
-
-  createComment(comment) {
-    return this.octokit.repos.createCommitComment({
-      owner: this.owner,
-      repo: this.repo,
-      commit_sha: this.commitSHA,
-      body: comment,
-    });
-  }
-
-  deleteComment(commentID) {
-    return this.octokit.repos.deleteCommitComment({
-      owner: this.owner,
-      repo: this.repo,
-      comment_id: commentID,
-    });
-  }
-
-  listComments(opts) {
-    return this.octokit.repos.listCommentsForCommit({
-      owner: this.owner,
-      repo: this.repo,
-      commit_sha: this.commitSHA,
-      page: opts.page,
-      per_page: opts.perPage,
-    });
-  }
-
-  updateComment(commentID, comment) {
-    return this.octokit.repos.updateCommitComment({
-      owner: this.owner,
-      repo: this.repo,
-      comment_id: commentID,
-      body: comment,
-    });
-  }
-}
-
-// CONCATENATED MODULE: ./comment/commenter.js
-
-
-
-
-function getCommenter(octokit, {
-  owner, repo, number, commitSHA,
-}) {
-  if ((number && commitSHA) || (!number && !commitSHA)) {
-    throw new Error('Either set the `number` or the `commit-sha` field.');
-  }
-  if (number) {
-    return new IssueCommenter(octokit, { owner, repo, number });
-  }
-  if (commitSHA) {
-    return new CommitCommenter(octokit, { owner, repo, commitSHA });
-  }
-  return null;
-}
-
-async function findMatchingComments(commenter, identifier) {
-  let fetchMoreComments = true;
-  let page = 0;
-  const matchingComments = [];
-  const commentPrefix = getCommentPrefix(identifier);
-
-  while (fetchMoreComments) {
-    page += 1;
-    const comments = await commenter.listComments({
-      page,
-      perPage: 100,
-    });
-    fetchMoreComments = comments.data.length !== 0;
-    for (const comment of comments.data) {
-      if (comment.body.startsWith(commentPrefix)) {
-        matchingComments.push(comment);
-      }
-    }
-  }
-  return matchingComments;
-}
-
-async function findMatchingComment(commenter, identifier) {
-  const matchingComments = await findMatchingComments(commenter, identifier);
-  let matchingComment;
-  if (matchingComments && matchingComments.length > 0) {
-    matchingComment = matchingComments[matchingComments.length - 1];
-  }
-  return matchingComment;
-}
-
-// CONCATENATED MODULE: ./modes.js
-
-
-
-// normal mode creates a comment when there is no existing comment that match identifier
-// and updates the matching comment if found
-async function normalMode(commenter, identifier, message) {
-  console.log(`Checking if a comment already exists for ${identifier}.`);
-  const matchingComment = await findMatchingComment(commenter, identifier);
-
-  const comment = `${getCommentPrefix(identifier)}\n${message}`;
-
-  if (matchingComment) {
-    console.log(`Updating an existing comment for ${identifier}.`);
-    const resp = await commenter.updateComment(matchingComment.id, comment);
-    console.log(`Updated comment: ${resp.data.html_url}`);
-    return;
-  }
-
-  console.log(`Creating a new comment for ${identifier}.`);
-  const resp = await commenter.createComment(comment);
-  console.log(`Created comment: ${resp.data.html_url}`);
-}
-
-// recreate mode deletes existing comments that match the identifier
-// and creates a new comment
-async function recreateMode(commenter, identifier, message) {
-  console.log(`Finding matching comments for ${identifier}.`);
-  const matchingComments = await findMatchingComments(commenter, identifier);
-
-  for (const comment of matchingComments) {
-    console.log(`Deleting github comment ${comment.id}`);
-    await commenter.deleteComment(comment.id);
-  }
-
-  console.log(`Creating a new comment for ${identifier}.`);
-  const comment = `${getCommentPrefix(identifier)}\n${message}`;
-  const resp = await commenter.createComment(comment);
-  console.log(`Created comment: ${resp.data.html_url}`);
-}
-
-// append mode creates a comment when there is no existing comment that match identifier
-// and appends message to a matching comment if found.
-async function appendMode(commenter, identifier, message) {
-  console.log(`Checking if a comment already exists for ${identifier}.`);
-  const matchingComment = await findMatchingComment(commenter, identifier);
-
-  if (matchingComment) {
-    console.log(`Updating an existing comment for ${identifier}.`);
-    const comment = `${matchingComment.body}\n${message}`;
-    const resp = await commenter.updateComment(matchingComment.id, comment);
-    console.log(`Updated comment: ${resp.data.html_url}`);
-    return;
-  }
-
-  console.log(`Creating a new comment for ${identifier}.`);
-  const comment = `${getCommentPrefix(identifier)}\n${message}`;
-  const resp = await commenter.createComment(comment);
-  console.log(`Created comment: ${resp.data.html_url}`);
-}
-
-// delete mode deletes an existing comment that matches the identifier
-async function deleteMode(commenter, identifier) {
-  console.log(`Finding matching comment for ${identifier}.`);
-  const matchingComment = await findMatchingComment(commenter, identifier);
-
-  if (matchingComment) {
-    console.log(`Deleting github comment ${matchingComment.id}`);
-    await commenter.deleteComment(matchingComment.id);
-  }
-}
-
-// CONCATENATED MODULE: ./index.js
-
-
-
-
-
-(async () => {
-  try {
-    const repository = core.getInput("repository");
-    const [owner, repo] = repository.split("/");
-    if (!owner || !repo) {
-      throw new Error(`Invalid repository: ${repository}`);
-    }
-
-    const number = core.getInput("number");
-    const commitSHA = core.getInput("commit-sha");
-    const identifier = core.getInput("id");
-    const appendComment = core.getInput("append");
-    const recreateComment = core.getInput("recreate");
-    const deleteComment = core.getInput("delete");
-    const fail = core.getInput("fail");
-    const githubToken = core.getInput("github-token");
-    const message = core.getInput("message");
-
-    const octokit = github.getOctokit(githubToken);
-
-    let commenter;
-    try {
-      commenter = getCommenter(octokit, {
-        owner,
-        repo,
-        number,
-        commitSHA,
-      });
-    } catch (err) {
-      core.setFailed(err);
-      return;
-    }
-
-    let mode = normalMode;
-
-    if (appendComment === "true" && recreateComment === "true") {
-      core.setFailed("Not allowed to set both `append` and `recreate` to true.");
-      return;
-    }
-
-    if (deleteComment === "true" && (appendComment === "true" || recreateComment === "true")) {
-      core.setFailed("Not allowed to set `delete` to true with `append` or `recreate`.");
-      return;
-    }
-
-    if (recreateComment === "true") {
-      mode = recreateMode;
-    } else if (appendComment === "true") {
-      mode = appendMode;
-    } else if (deleteComment === "true") {
-      mode = deleteMode;
-    }
-
-    await mode(commenter, identifier, message);
-
-    if (fail === "true") {
-      core.setFailed(message);
-    }
-  } catch (error) {
-    console.error(error);
-    core.setFailed(error.message);
-  }
-})();
-
-
-/***/ }),
 
 /***/ 351:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
@@ -319,7 +14,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const os = __importStar(__nccwpck_require__(87));
+const os = __importStar(__nccwpck_require__(37));
 const utils_1 = __nccwpck_require__(278);
 /**
  * Commands
@@ -417,8 +112,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const command_1 = __nccwpck_require__(351);
 const file_command_1 = __nccwpck_require__(717);
 const utils_1 = __nccwpck_require__(278);
-const os = __importStar(__nccwpck_require__(87));
-const path = __importStar(__nccwpck_require__(622));
+const os = __importStar(__nccwpck_require__(37));
+const path = __importStar(__nccwpck_require__(17));
 /**
  * The code to exit an action
  */
@@ -653,8 +348,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const fs = __importStar(__nccwpck_require__(747));
-const os = __importStar(__nccwpck_require__(87));
+const fs = __importStar(__nccwpck_require__(147));
+const os = __importStar(__nccwpck_require__(37));
 const utils_1 = __nccwpck_require__(278);
 function issueCommand(command, message) {
     const filePath = process.env[`GITHUB_${command}`];
@@ -699,15 +394,15 @@ exports.toCommandValue = toCommandValue;
 
 /***/ }),
 
-/***/ 53:
+/***/ 87:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Context = void 0;
-const fs_1 = __nccwpck_require__(747);
-const os_1 = __nccwpck_require__(87);
+const fs_1 = __nccwpck_require__(147);
+const os_1 = __nccwpck_require__(37);
 class Context {
     /**
      * Hydrate the context from the environment
@@ -782,7 +477,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getOctokit = exports.context = void 0;
-const Context = __importStar(__nccwpck_require__(53));
+const Context = __importStar(__nccwpck_require__(87));
 const utils_1 = __nccwpck_require__(30);
 exports.context = new Context.Context();
 /**
@@ -875,7 +570,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getOctokitOptions = exports.GitHub = exports.context = void 0;
-const Context = __importStar(__nccwpck_require__(53));
+const Context = __importStar(__nccwpck_require__(87));
 const Utils = __importStar(__nccwpck_require__(914));
 // octokit + plugins
 const core_1 = __nccwpck_require__(762);
@@ -916,8 +611,8 @@ exports.getOctokitOptions = getOctokitOptions;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const http = __nccwpck_require__(605);
-const https = __nccwpck_require__(211);
+const http = __nccwpck_require__(685);
+const https = __nccwpck_require__(687);
 const pm = __nccwpck_require__(443);
 let tunnel;
 var HttpCodes;
@@ -4045,11 +3740,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var Stream = _interopDefault(__nccwpck_require__(413));
-var http = _interopDefault(__nccwpck_require__(605));
-var Url = _interopDefault(__nccwpck_require__(835));
-var https = _interopDefault(__nccwpck_require__(211));
-var zlib = _interopDefault(__nccwpck_require__(761));
+var Stream = _interopDefault(__nccwpck_require__(781));
+var http = _interopDefault(__nccwpck_require__(685));
+var Url = _interopDefault(__nccwpck_require__(310));
+var https = _interopDefault(__nccwpck_require__(687));
+var zlib = _interopDefault(__nccwpck_require__(796));
 
 // Based on https://github.com/tmpvar/jsdom/blob/aa85b2abf07766ff7bf5c1f6daafb3726f2f2db5/lib/jsdom/living/blob.js
 
@@ -4200,7 +3895,7 @@ FetchError.prototype.name = 'FetchError';
 
 let convert;
 try {
-	convert = __nccwpck_require__(877).convert;
+	convert = (__nccwpck_require__(877).convert);
 } catch (e) {}
 
 const INTERNALS = Symbol('Body internals');
@@ -5683,7 +5378,7 @@ fetch.Promise = global.Promise;
 
 module.exports = exports = fetch;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.default = exports;
+exports["default"] = exports;
 exports.Headers = Headers;
 exports.Request = Request;
 exports.Response = Response;
@@ -5755,13 +5450,13 @@ module.exports = __nccwpck_require__(219);
 "use strict";
 
 
-var net = __nccwpck_require__(631);
-var tls = __nccwpck_require__(16);
-var http = __nccwpck_require__(605);
-var https = __nccwpck_require__(211);
-var events = __nccwpck_require__(614);
-var assert = __nccwpck_require__(357);
-var util = __nccwpck_require__(669);
+var net = __nccwpck_require__(808);
+var tls = __nccwpck_require__(404);
+var http = __nccwpck_require__(685);
+var https = __nccwpck_require__(687);
+var events = __nccwpck_require__(361);
+var assert = __nccwpck_require__(491);
+var util = __nccwpck_require__(837);
 
 
 exports.httpOverHttp = httpOverHttp;
@@ -6095,107 +5790,107 @@ module.exports = eval("require")("encoding");
 
 /***/ }),
 
-/***/ 357:
+/***/ 491:
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("assert");;
+module.exports = require("assert");
 
 /***/ }),
 
-/***/ 614:
+/***/ 361:
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("events");;
+module.exports = require("events");
 
 /***/ }),
 
-/***/ 747:
+/***/ 147:
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("fs");;
+module.exports = require("fs");
 
 /***/ }),
 
-/***/ 605:
+/***/ 685:
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("http");;
+module.exports = require("http");
 
 /***/ }),
 
-/***/ 211:
+/***/ 687:
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("https");;
+module.exports = require("https");
 
 /***/ }),
 
-/***/ 631:
+/***/ 808:
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("net");;
+module.exports = require("net");
 
 /***/ }),
 
-/***/ 87:
+/***/ 37:
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("os");;
+module.exports = require("os");
 
 /***/ }),
 
-/***/ 622:
+/***/ 17:
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("path");;
+module.exports = require("path");
 
 /***/ }),
 
-/***/ 413:
+/***/ 781:
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("stream");;
+module.exports = require("stream");
 
 /***/ }),
 
-/***/ 16:
+/***/ 404:
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("tls");;
+module.exports = require("tls");
 
 /***/ }),
 
-/***/ 835:
+/***/ 310:
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("url");;
+module.exports = require("url");
 
 /***/ }),
 
-/***/ 669:
+/***/ 837:
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("util");;
+module.exports = require("util");
 
 /***/ }),
 
-/***/ 761:
+/***/ 796:
 /***/ ((module) => {
 
 "use strict";
-module.exports = require("zlib");;
+module.exports = require("zlib");
 
 /***/ })
 
@@ -6207,8 +5902,9 @@ module.exports = require("zlib");;
 /******/ 	// The require function
 /******/ 	function __nccwpck_require__(moduleId) {
 /******/ 		// Check if module is in cache
-/******/ 		if(__webpack_module_cache__[moduleId]) {
-/******/ 			return __webpack_module_cache__[moduleId].exports;
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
 /******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = __webpack_module_cache__[moduleId] = {
@@ -6244,10 +5940,347 @@ module.exports = require("zlib");;
 /******/ 	
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
-/******/ 	__nccwpck_require__.ab = __dirname + "/";/************************************************************************/
-/******/ 	// module exports must be returned from runtime so entry inlining is disabled
-/******/ 	// startup
-/******/ 	// Load entry module and return exports
-/******/ 	return __nccwpck_require__(752);
+/******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
+/******/ 	
+/************************************************************************/
+var __webpack_exports__ = {};
+// This entry need to be wrapped in an IIFE because it need to be in strict mode.
+(() => {
+"use strict";
+// ESM COMPAT FLAG
+__nccwpck_require__.r(__webpack_exports__);
+
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
+var core = __nccwpck_require__(186);
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
+var github = __nccwpck_require__(438);
+;// CONCATENATED MODULE: ./identifier.js
+function getCommentPrefix(identifier) {
+  return `<!-- ${identifier}: do not delete/edit this line -->`;
+}
+
+;// CONCATENATED MODULE: ./comment/issue_commenter.js
+class IssueCommenter {
+  constructor(octokit, { owner, repo, number }) {
+    this.octokit = octokit;
+    this.owner = owner;
+    this.repo = repo;
+    this.number = number;
+  }
+
+  createComment(comment) {
+    return this.octokit.issues.createComment({
+      owner: this.owner,
+      repo: this.repo,
+      issue_number: this.number,
+      body: comment,
+    });
+  }
+
+  deleteComment(commentID) {
+    return this.octokit.issues.deleteComment({
+      owner: this.owner,
+      repo: this.repo,
+      comment_id: commentID,
+    });
+  }
+
+  listComments(opts) {
+    return this.octokit.issues.listComments({
+      owner: this.owner,
+      repo: this.repo,
+      issue_number: this.number,
+      page: opts.page,
+      per_page: opts.perPage,
+    });
+  }
+
+  updateComment(commentID, comment) {
+    return this.octokit.issues.updateComment({
+      owner: this.owner,
+      repo: this.repo,
+      comment_id: commentID,
+      body: comment,
+    });
+  }
+}
+
+;// CONCATENATED MODULE: ./comment/commit_commenter.js
+class CommitCommenter {
+  constructor(octokit, { owner, repo, commitSHA }) {
+    this.octokit = octokit;
+    this.owner = owner;
+    this.repo = repo;
+    this.commitSHA = commitSHA;
+  }
+
+  createComment(comment) {
+    return this.octokit.repos.createCommitComment({
+      owner: this.owner,
+      repo: this.repo,
+      commit_sha: this.commitSHA,
+      body: comment,
+    });
+  }
+
+  deleteComment(commentID) {
+    return this.octokit.repos.deleteCommitComment({
+      owner: this.owner,
+      repo: this.repo,
+      comment_id: commentID,
+    });
+  }
+
+  listComments(opts) {
+    return this.octokit.repos.listCommentsForCommit({
+      owner: this.owner,
+      repo: this.repo,
+      commit_sha: this.commitSHA,
+      page: opts.page,
+      per_page: opts.perPage,
+    });
+  }
+
+  updateComment(commentID, comment) {
+    return this.octokit.repos.updateCommitComment({
+      owner: this.owner,
+      repo: this.repo,
+      comment_id: commentID,
+      body: comment,
+    });
+  }
+}
+
+;// CONCATENATED MODULE: ./comment/commenter.js
+
+
+
+
+function getCommenter(octokit, {
+  owner, repo, number, commitSHA,
+}) {
+  if ((number && commitSHA) || (!number && !commitSHA)) {
+    throw new Error('Either set the `number` or the `commit-sha` field.');
+  }
+  if (number) {
+    return new IssueCommenter(octokit, { owner, repo, number });
+  }
+  if (commitSHA) {
+    return new CommitCommenter(octokit, { owner, repo, commitSHA });
+  }
+  return null;
+}
+
+async function findMatchingComments(commenter, identifier) {
+  let fetchMoreComments = true;
+  let page = 0;
+  const matchingComments = [];
+  const commentPrefix = getCommentPrefix(identifier);
+
+  while (fetchMoreComments) {
+    page += 1;
+    const comments = await commenter.listComments({
+      page,
+      perPage: 100,
+    });
+    fetchMoreComments = comments.data.length !== 0;
+    for (const comment of comments.data) {
+      if (comment.body.startsWith(commentPrefix)) {
+        matchingComments.push(comment);
+      }
+    }
+  }
+  return matchingComments;
+}
+
+async function findMatchingComment(commenter, identifier) {
+  const matchingComments = await findMatchingComments(commenter, identifier);
+  let matchingComment;
+  if (matchingComments && matchingComments.length > 0) {
+    matchingComment = matchingComments[matchingComments.length - 1];
+  }
+  return matchingComment;
+}
+
+;// CONCATENATED MODULE: ./modes.js
+
+
+
+// normal mode creates a comment when there is no existing comment that match identifier
+// and updates the matching comment if found
+async function normalMode(commenter, identifier, message) {
+  console.log(`Checking if a comment already exists for ${identifier}.`);
+  const matchingComment = await findMatchingComment(commenter, identifier);
+
+  const comment = `${getCommentPrefix(identifier)}\n${message}`;
+
+  if (matchingComment) {
+    console.log(`Updating an existing comment for ${identifier}.`);
+    const resp = await commenter.updateComment(matchingComment.id, comment);
+    console.log(`Updated comment: ${resp.data.html_url}`);
+    return;
+  }
+
+  console.log(`Creating a new comment for ${identifier}.`);
+  const resp = await commenter.createComment(comment);
+  console.log(`Created comment: ${resp.data.html_url}`);
+}
+
+// recreate mode deletes existing comments that match the identifier
+// and creates a new comment
+async function recreateMode(commenter, identifier, message) {
+  console.log(`Finding matching comments for ${identifier}.`);
+  const matchingComments = await findMatchingComments(commenter, identifier);
+
+  for (const comment of matchingComments) {
+    console.log(`Deleting github comment ${comment.id}`);
+    await commenter.deleteComment(comment.id);
+  }
+
+  console.log(`Creating a new comment for ${identifier}.`);
+  const comment = `${getCommentPrefix(identifier)}\n${message}`;
+  const resp = await commenter.createComment(comment);
+  console.log(`Created comment: ${resp.data.html_url}`);
+}
+
+// append mode creates a comment when there is no existing comment that match identifier
+// and appends message to a matching comment if found.
+async function appendMode(commenter, identifier, message) {
+  console.log(`Checking if a comment already exists for ${identifier}.`);
+  const matchingComment = await findMatchingComment(commenter, identifier);
+
+  if (matchingComment) {
+    console.log(`Updating an existing comment for ${identifier}.`);
+    const comment = `${matchingComment.body}\n${message}`;
+    const resp = await commenter.updateComment(matchingComment.id, comment);
+    console.log(`Updated comment: ${resp.data.html_url}`);
+    return;
+  }
+
+  console.log(`Creating a new comment for ${identifier}.`);
+  const comment = `${getCommentPrefix(identifier)}\n${message}`;
+  const resp = await commenter.createComment(comment);
+  console.log(`Created comment: ${resp.data.html_url}`);
+}
+
+// replace mode replaces the content of an existing comment that matches the identifier
+// with the message.
+async function replaceMode(commenter, identifier, message) {
+  console.log(`Checking if a comment already exists for ${identifier}.`);
+  const matchingComment = await findMatchingComment(commenter, identifier);
+
+  const comment = `${getCommentPrefix(identifier)}\n${message}`;
+
+  if (matchingComment) {
+    console.log(`Updating an existing comment for ${identifier}.`);
+    const resp = await commenter.updateComment(matchingComment.id, comment);
+    console.log(`Updated comment: ${resp.data.html_url}`);
+    return;
+  }
+
+  console.log(`Creating a new comment for ${identifier}.`);
+  const resp = await commenter.createComment(comment);
+  console.log(`Created comment: ${resp.data.html_url}`);
+}
+
+// delete mode deletes an existing comment that matches the identifier
+async function deleteMode(commenter, identifier) {
+  console.log(`Finding matching comment for ${identifier}.`);
+  const matchingComment = await findMatchingComment(commenter, identifier);
+
+  if (matchingComment) {
+    console.log(`Deleting github comment ${matchingComment.id}`);
+    await commenter.deleteComment(matchingComment.id);
+  }
+}
+
+;// CONCATENATED MODULE: ./index.js
+
+
+
+
+
+(async () => {
+  try {
+    const repository = core.getInput('repository');
+    const [owner, repo] = repository.split('/');
+    if (!owner || !repo) {
+      throw new Error(`Invalid repository: ${repository}`);
+    }
+
+    const number = core.getInput('number');
+    const commitSHA = core.getInput('commit-sha');
+    const identifier = core.getInput('id');
+    const fail = core.getInput('fail');
+    const githubToken = core.getInput('github-token');
+    const message = core.getInput('message');
+
+    const appendComment = core.getInput('append');
+    const replaceComment = core.getInput('replace');
+    const recreateComment = core.getInput('recreate');
+    const deleteComment = core.getInput('delete');
+
+    const octokit = github.getOctokit(githubToken);
+
+    let commenter;
+    try {
+      commenter = getCommenter(octokit, {
+        owner,
+        repo,
+        number,
+        commitSHA,
+      });
+    } catch (err) {
+      core.setFailed(err);
+      return;
+    }
+
+    const effectiveModes = [
+      { name: 'recreate', flag: recreateComment },
+      { name: 'append', flag: appendComment },
+      { name: 'replace', flag: replaceComment },
+      { name: 'delete', flag: deleteComment },
+    ].filter((m) => m.flag === 'true');
+
+    if (effectiveModes.length > 1) {
+      const effectiveModeNames = effectiveModes.map((m) => m.name).join(', ');
+      core.setFailed(`Only one of ${effectiveModeNames} can be set to true.`);
+      return;
+    }
+
+    let mode;
+
+    switch (effectiveModes[0].name) {
+      case 'recreate':
+        mode = recreateMode;
+        break;
+      case 'append':
+        mode = appendMode;
+        break;
+      case 'replace':
+        mode = replaceMode;
+        break;
+      case 'delete':
+        mode = deleteMode;
+        break;
+      default:
+        mode = normalMode;
+        break;
+    }
+
+    await mode(commenter, identifier, message);
+
+    if (fail === 'true') {
+      core.setFailed(message);
+    }
+  } catch (error) {
+    console.error(error);
+    core.setFailed(error.message);
+  }
+})();
+
+})();
+
+module.exports = __webpack_exports__;
 /******/ })()
 ;
