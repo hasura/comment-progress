@@ -230,6 +230,11 @@ jobs:
           id: preview-url
 ```
 
+## Related actions
+
+- [Action Comment Pull Request](https://github.com/thollander/actions-comment-pull-request) offers a similar functionality. Does not support failing, but offers reading the message from a file.
+- [GitHub Comment on PR](https://github.com/koppor/ghprcomment/) triggers comment based on failed workflows.
+
 ## Contributing
 
 Contributions are welcome :pray: Please [open an issue](https://github.com/hasura/comment-progress/issues/new) before working on something big or breaking.
